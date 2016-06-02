@@ -1,15 +1,17 @@
-class LM:
-    def __init__(self):
-        pass
+from StatsModel import StatsModel
 
-class GLM:
+class LM(StatsModel):
     def __init__(self):
-        pass
+        StatsModel.__init__(self, 'lm')
 
-class LME:
+class GLM(StatsModel):
     def __init__(self):
-        pass
+        StatsModel.__init__(self, 'glm')
 
-class GLME:
+class LME(StatsModel):
     def __init__(self):
-        pass
+        StatsModel.__init__(self, 'lme')
+
+class GLME(StatsModel):
+    def __init__(self):
+        StatsModel.__init__(self, 'glme')
