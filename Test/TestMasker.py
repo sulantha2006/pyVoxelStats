@@ -1,5 +1,4 @@
-from Masker import Masker
-import nibabel
+from Util.Masker import Masker
 
 masker = Masker('nifti', 'VoxelStatsTestData/Masks/FullBrain.nii')
 image_masked = masker.mask_image('VoxelStatsTestData/NIFTY/I300779.nii')
