@@ -38,15 +38,13 @@ class MincUtil(FileUtil):
 
 class NiftiUtil(FileUtil):
     def __init__(self):
-        print('Reading and writing Nifti files are still experimental. Not recommended for use')
+        pass
 
     def load(self, file_name):
         img = nibabel.load(file_name)
-        print('Reading and writing Nifti files are still experimental. Not recommended for use')
         return img.get_data()
 
     def save(self, data, file_name, ref_file):
         ref_img = nibabel.load(ref_file)
         affine = ref_img.affine
-        print('Reading and writing Nifti files are still experimental. Not recommended for use')
         nibabel.save(nibabel.Nifti1Image(data, affine), file_name)
