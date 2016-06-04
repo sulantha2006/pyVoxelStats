@@ -3,15 +3,15 @@ import pyminc.volumes.factory as fc
 
 class FileReaderWriter:
     def __init__(self, file_type):
-        self.file_type = file_type
-        self.file_readers = {'minc':MincUtil, 'nifti':NiftiUtil}
-        self.file_writers = {'minc':MincUtil, 'nifti':NiftiUtil}
+        self._file_type = file_type
+        self._file_readers = {'minc':MincUtil, 'nifti':NiftiUtil}
+        self._file_writers = {'minc':MincUtil, 'nifti':NiftiUtil}
 
     def read_file(self, image_file):
-        return self.file_readers[self.file_type]().load(image_file)
+        return self._file_readers[self._file_type]().load(image_file)
 
     def write_file(self, data, file_name, ref_file):
-        return self.file_writers[self.file_type]().save(data, file_name, ref_file)
+        return self._file_writers[self._file_type]().save(data, file_name, ref_file)
 
 class FileUtil:
     def load(self, file_name):
