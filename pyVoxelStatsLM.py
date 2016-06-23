@@ -3,7 +3,7 @@ from Util.Masker import Masker
 from Util.VoxelOperation import VoxelOperation
 
 
-string_model = 'A ~ e + C + C(F)'
+string_model = 'A ~ e + C + C(f)'
 data_file = 'VoxelStatsTestData/CSV/Data.csv'
 mask_file = 'VoxelStatsTestData/Masks/FullBrain.mnc'
 voxel_vars = ['A', 'C']
