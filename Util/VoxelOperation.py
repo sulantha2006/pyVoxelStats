@@ -32,8 +32,8 @@ class VoxelOperation:
                                                        shape=self.dataset_obj._data_table[var].shape)
                 else:
                     self.operation_dataset[var] = dict(data=VarDataAccessPointer(self.voxel_var_data_map[var]),
-                                                       shape=self.voxel_var_data_map[var].shape)
-        self.total_voxel_ops = max(self.operation_dataset[k].shape[1] for k in self.operation_dataset)
+                                                       shape=self.voxel_var_data_map[var][0].shape)
+        self.total_voxel_ops = max(self.operation_dataset[k]['shape'][1] for k in self.operation_dataset)
 
     def execute(self):
         pass
