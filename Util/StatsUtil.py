@@ -6,12 +6,14 @@ class DataMatrix:
         self._Y = None
 
 class Dataset:
-    def __init__(self, file_name, file_type='csv', delimiter=',', filter_string=None):
+    def __init__(self, file_name, file_type='csv', delimiter=',', filter_string=None, string_model_obj=None):
         self._file_name = file_name
         self._file_type = file_type
         self._delimiter = delimiter
         self._filter_string = filter_string
         self._data_table_full = self.__load_data()
+        self.string_model_obj = string_model_obj
+        self._data_table = self.__get_data_table()
 
     def __load_data_file(self):
         data_set = None
@@ -30,7 +32,9 @@ class Dataset:
             filtered_data = data_set
         return filtered_data
 
-    def get_data_table(self, used_vars):
+    def __get_data_table(self, used_vars=None):
+        if not used_vars:
+            used_vars = self.string_model_obj._used_vars
         return self._data_table_full[used_vars]
 
 class StatsModel():
@@ -63,6 +67,7 @@ class StringModel:
         self._used_vars = self.__get_used_vars(self._string_model)
 
     def __get_used_vars(self, string_model):
-        all_strings = re.findall(r"[.\w']+",  string_model)
+        all_strings = re.findall(r"[.C\(\w\)\w']+",  string_model)
+        all_strings = [re.sub(r'C\(([\w]+)\)', r'\1', st) for st in all_strings]
         unique_vars = set(all_strings)
         return list(unique_vars)
