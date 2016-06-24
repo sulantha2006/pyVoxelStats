@@ -16,4 +16,5 @@ stats_model = LM()
 
 voxel_op = VoxelOperation(string_model_obj, data_set, masker, stats_model)
 voxel_op.set_up()
+voxel_op.execute()
 
