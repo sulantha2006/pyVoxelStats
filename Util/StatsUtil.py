@@ -1,4 +1,6 @@
 import pandas, re
+import statsmodels.formula.api as smf
+from Util.Params import StatsModelsParams
 
 class DataMatrix:
     def __init__(self):
@@ -41,30 +43,56 @@ class StatsModel():
     def __init__(self, type):
         self._type = type
 
-    def fit(self, X, y):
-        pass
+    def fit(self, data_frame):
+        print('Not yet implemented')
+        return None
+
+    def filter_result(self, result):
+        print('Not yet implemented')
+        return None
 
 class LM(StatsModel):
-    def __init__(self):
+    def __init__(self, string_model):
         StatsModel.__init__(self, 'lm')
+        self.string_model = string_model
+        self.model_wise_results_names = StatsModelsParams.ResultsModelWiseResults['lm']
+        self.var_wise_results_names = StatsModelsParams.ResultsModelVariableWiseResults['lm']
+
+    def fit(self, data_frame):
+        mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
+        res = mod.fit()
+        return self.filter_result(res)
+
+    def filter_result(self, result):
+        result_f={}
+        for vard in self.model_wise_results_names:
+            result_f[vard] = getattr(result, vard)
+        variable_names_in_model_op = result.model.exog_names
+        for vard in self.var_wise_results_names:
+            result_f[vard] = {name:getattr(result, vard)[name] for name in variable_names_in_model_op}
+        result_f['variable_names_in_model_op'] = variable_names_in_model_op
+        return result_f
 
 class GLM(StatsModel):
-    def __init__(self):
+    def __init__(self, string_model):
         StatsModel.__init__(self, 'glm')
+        self.string_model = string_model
 
 class LME(StatsModel):
-    def __init__(self):
+    def __init__(self, string_model):
         StatsModel.__init__(self, 'lme')
+        self.string_model = string_model
 
 class GLME(StatsModel):
-    def __init__(self):
+    def __init__(self, string_model):
         StatsModel.__init__(self, 'glme')
+        self.string_model = string_model
 
 class StringModel:
-    def __init__(self, string_model, voxel_vars):
-        self._string_model = string_model
+    def __init__(self, string_model_str, voxel_vars):
+        self._string_model_str = string_model_str
         self._voxel_vars = voxel_vars
-        self._used_vars = self.__get_used_vars(self._string_model)
+        self._used_vars = self.__get_used_vars(self._string_model_str)
 
     def __get_used_vars(self, string_model):
         all_strings = re.findall(r"[.C\(\w\)\w']+",  string_model)
