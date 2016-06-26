@@ -1,4 +1,4 @@
-import numpy, pandas, copy, os
+import numpy, pandas, copy, os, datetime
 import ipyparallel as ipp
 
 class VoxelOperation:
@@ -47,7 +47,10 @@ class VoxelOperation:
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
         for i in range(blockSize):
-            data = {var:block_variable_dict[var][:,i] for var in vars}
+            try:
+                data = {var:block_variable_dict[var][:,i] for var in vars}
+            except:
+                print('Hi')
             data_block.append(dict(data_block=pandas.DataFrame.from_dict(data), location=start_loc+i,
                               stats_obj=copy.copy(self.stats_obj)))
         return data_block
@@ -58,7 +61,7 @@ class VoxelOperation:
         finished = False
         if (blockSize*block_number) > self.total_voxel_ops:
             finished = True
-            return [], finished
+            return ([], finished)
         elif (blockSize*(block_number+1) > self.total_voxel_ops) & (blockSize*block_number < self.total_voxel_ops):
             block_var_dict = {}
             for var in self.operation_dataset:
@@ -76,17 +79,20 @@ class VoxelOperation:
         slice_count = 200
         blockSize = numpy.ceil(self.total_voxel_ops/slice_count)
         for art_slice in range(slice_count):
-            print('Slice - {0}'.format(art_slice))
+            print('Slice - {0}'.format(art_slice), end="")
+            sl_st_time = datetime.datetime.now().replace(microsecond=0)
             data_block, finished = self.__get_data_block(blockSize, art_slice)
             if finished:
                 print('Analysis complete')
                 return 0
             else:
                 self.par_view.map(os.chdir, [os.getcwd()]*self.number_of_engines)
-                par_results = self.par_view.map_async(run_par, data_block)
-                par_results.get()
+                par_results = self.par_view.map_sync(run_par, data_block)
                 for i in par_results:
                     self.results.modify_temp_result(i.res, i.loc)
+            sl_end_time = datetime.datetime.now().replace(microsecond=0)
+            print(' - {0}'.format(sl_end_time - sl_st_time))
+
 
 def run_par(data_block):
     loc = data_block['location']
@@ -139,8 +145,10 @@ class VoxelOpResultsWrapper:
             res[var]={name:numpy.zeros(self.total_ops) for name in model_var_names}
 
         for i in range(self.total_ops):
+            print(i)
             obj = self.temp_results[i]
             for var in self.stats_model.model_wise_results_names:
+                print(var)
                 res[var][i] = obj[var]
             for var in self.stats_model.var_wise_results_names:
                 for name in model_var_names:

@@ -5,7 +5,7 @@ from Util.VoxelOperation import VoxelOperation
 
 string_model = 'A ~ e + C_d + C(f)'
 data_file = 'VoxelStatsTestData/CSV/Data.csv'
-mask_file = 'VoxelStatsTestData/Masks/FullBrain.mnc'
+mask_file = 'VoxelStatsTestData/Masks/cerebellum_full_mask2.mnc'
 voxel_vars = ['A', 'C_d']
 filter_string = 'b > 1'
 
@@ -17,5 +17,5 @@ stats_model = LM(string_model_obj)
 voxel_op = VoxelOperation(string_model_obj, data_set, masker, stats_model)
 voxel_op.set_up()
 voxel_op.execute()
-res = voxel_op.results
+res = voxel_op.results.get_results()
 
