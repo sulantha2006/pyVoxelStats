@@ -47,10 +47,7 @@ class VoxelOperation:
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
         for i in range(blockSize):
-            try:
-                data = {var:block_variable_dict[var][:,i] for var in vars}
-            except:
-                print('Hi')
+            data = {var:block_variable_dict[var][:,i] for var in vars}
             data_block.append(dict(data_block=pandas.DataFrame.from_dict(data), location=start_loc+i,
                               stats_obj=copy.copy(self.stats_obj)))
         return data_block
@@ -111,14 +108,12 @@ class VarDataAccessPointer:
 
     def get_data(self, pointer_loc):
         if self.outer_shape == 1:
-            return numpy.tile(self.var_data.as_matrix(), (1, 1)).transpose()
+            return self.var_data.as_matrix()
         return self.var_data[:, pointer_loc % self.outer_shape]
 
     def get_data_block(self, loc_1, loc_2):
-        if self.outer_shape == 1:
-            blockSize = loc_2-loc_1
-            return numpy.tile(self.var_data.as_matrix(), (blockSize, 1)).transpose()
-        return self.var_data[:, loc_1 % self.outer_shape: loc_2 % self.outer_shape]
+        data = [self.get_data(loc) for loc in range(loc_1, loc_2+1)]
+        return numpy.vstack(data).T
 
 class VoxelOpResultsWrapper:
     def __init__(self, total_voxel_operations, stats_model):
@@ -145,10 +140,8 @@ class VoxelOpResultsWrapper:
             res[var]={name:numpy.zeros(self.total_ops) for name in model_var_names}
 
         for i in range(self.total_ops):
-            print(i)
             obj = self.temp_results[i]
             for var in self.stats_model.model_wise_results_names:
-                print(var)
                 res[var][i] = obj[var]
             for var in self.stats_model.var_wise_results_names:
                 for name in model_var_names:
