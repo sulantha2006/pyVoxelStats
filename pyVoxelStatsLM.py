@@ -14,6 +14,7 @@ masker = Masker('minc', mask_file)
 stats_model = LM(string_model_obj)
 
 voxel_op = VoxelOperation(string_model_obj, data_set, masker, stats_model)
+voxel_op.set_up_cluster(workers=4)
 voxel_op.set_up()
 voxel_op.execute()
 res = voxel_op.results.get_results()
