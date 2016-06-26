@@ -2,10 +2,12 @@ import pandas, re
 import statsmodels.formula.api as smf
 from Util.Params import StatsModelsParams
 
+
 class DataMatrix:
     def __init__(self):
         self._X = None
         self._Y = None
+
 
 class Dataset:
     def __init__(self, file_name, file_type='csv', delimiter=',', filter_string=None, string_model_obj=None):
@@ -39,6 +41,7 @@ class Dataset:
             used_vars = self.string_model_obj._used_vars
         return self._data_table_full[used_vars]
 
+
 class StatsModel():
     def __init__(self, type):
         self._type = type
@@ -50,6 +53,7 @@ class StatsModel():
     def filter_result(self, result):
         print('Not yet implemented')
         return None
+
 
 class LM(StatsModel):
     def __init__(self, string_model):
@@ -64,29 +68,33 @@ class LM(StatsModel):
         return self.filter_result(res)
 
     def filter_result(self, result):
-        result_f={}
+        result_f = {}
         for vard in self.model_wise_results_names:
             result_f[vard] = getattr(result, vard)
         variable_names_in_model_op = result.model.exog_names
         for vard in self.var_wise_results_names:
-            result_f[vard] = {name:getattr(result, vard)[name] for name in variable_names_in_model_op}
+            result_f[vard] = {name: getattr(result, vard)[name] for name in variable_names_in_model_op}
         result_f['variable_names_in_model_op'] = variable_names_in_model_op
         return result_f
+
 
 class GLM(StatsModel):
     def __init__(self, string_model):
         StatsModel.__init__(self, 'glm')
         self.string_model = string_model
 
+
 class LME(StatsModel):
     def __init__(self, string_model):
         StatsModel.__init__(self, 'lme')
         self.string_model = string_model
 
+
 class GLME(StatsModel):
     def __init__(self, string_model):
         StatsModel.__init__(self, 'glme')
         self.string_model = string_model
+
 
 class StringModel:
     def __init__(self, string_model_str, voxel_vars):
@@ -95,7 +103,7 @@ class StringModel:
         self._used_vars = self.__get_used_vars(self._string_model_str)
 
     def __get_used_vars(self, string_model):
-        all_strings = re.findall(r"[.C\(\w\)\w']+",  string_model)
+        all_strings = re.findall(r"[.C\(\w\)\w']+", string_model)
         all_strings = [re.sub(r'C\(([\w]+)\)', r'\1', st) for st in all_strings]
         unique_vars = set(all_strings)
         return list(unique_vars)

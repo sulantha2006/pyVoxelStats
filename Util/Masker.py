@@ -1,6 +1,7 @@
 from Util.FileUtil import FileReaderWriter
 import numpy
 
+
 class Masker:
     def __init__(self, file_type, mask_file):
         self._file_type = file_type
@@ -17,7 +18,7 @@ class Masker:
     def __mask_data(self, data):
         dim_dif = data.ndim - self._mask_ndim
         if dim_dif > 0:
-            time_rep_array = [1]*data.ndim
+            time_rep_array = [1] * data.ndim
             for dim in range(dim_dif):
                 time_rep_array[dim] = data.shape[dim]
             mask = numpy.tile(self._mask_array, tuple(time_rep_array))
@@ -45,4 +46,3 @@ class Masker:
 
     def get_data_from_image(self, image_file_name):
         return self.__mask_image(image_file_name)
-

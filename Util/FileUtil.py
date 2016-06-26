@@ -1,11 +1,12 @@
 import nibabel
 import pyminc.volumes.factory as fc
 
+
 class FileReaderWriter:
     def __init__(self, file_type):
         self._file_type = file_type
-        self._file_readers = {'minc':MincUtil, 'nifti':NiftiUtil}
-        self._file_writers = {'minc':MincUtil, 'nifti':NiftiUtil}
+        self._file_readers = {'minc': MincUtil, 'nifti': NiftiUtil}
+        self._file_writers = {'minc': MincUtil, 'nifti': NiftiUtil}
 
     def read_file(self, image_file):
         return self._file_readers[self._file_type]()._load(image_file)
@@ -13,12 +14,14 @@ class FileReaderWriter:
     def write_file(self, data, file_name, ref_file):
         return self._file_writers[self._file_type]()._save(data, file_name, ref_file)
 
+
 class FileUtil:
     def _load(self, file_name):
         pass
 
     def _save(self, data, file_name, ref_file):
         pass
+
 
 class MincUtil(FileUtil):
     def __init__(self):
@@ -35,6 +38,7 @@ class MincUtil(FileUtil):
         out_h.data = data
         out_h.writeFile()
         out_h.closeVolume()
+
 
 class NiftiUtil(FileUtil):
     def __init__(self):
