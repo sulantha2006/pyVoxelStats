@@ -17,6 +17,8 @@ class VoxelOperation:
 
     def set_up_cluster(self, profile_name='default', workers=None):
         print('Setting up cluster .....', end=' ')
+        p0 = subprocess.Popen(['ipcluster stop'], shell=True)
+        time.sleep(5)
         if workers:
             str_args = ['ipcluster start -n {0} --profile {1}'.format(workers, profile_name)]
         else:
