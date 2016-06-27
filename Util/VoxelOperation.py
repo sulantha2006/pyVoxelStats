@@ -15,16 +15,17 @@ class VoxelOperation:
         self.par_view = None
         self.number_of_engines = 0
 
-    def set_up_cluster(self, profile_name='default', workers=None):
+    def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
         print('Setting up cluster .....', end=' ')
-        p0 = subprocess.Popen(['ipcluster stop'], shell=True)
-        time.sleep(5)
-        if workers:
-            str_args = ['ipcluster start -n {0} --profile {1}'.format(workers, profile_name)]
-        else:
-            str_args = ['ipcluster start --profile={0}'.format(profile_name)]
-        p = subprocess.Popen(str_args, shell=True)
-        time.sleep(10)
+        if not no_start:
+            p0 = subprocess.Popen(['ipcluster stop'], shell=True)
+            time.sleep(5)
+            if workers:
+                str_args = ['ipcluster start -n {0} --profile {1}'.format(workers, profile_name)]
+            else:
+                str_args = ['ipcluster start --profile={0}'.format(profile_name)]
+            p = subprocess.Popen(str_args, shell=True)
+            time.sleep(10)
         self.par_view = ipp.Client()[:]
         self.number_of_engines = len(self.par_view)
         print('Done')
