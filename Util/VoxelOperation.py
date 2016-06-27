@@ -1,4 +1,4 @@
-import numpy, pandas, copy, os, datetime, subprocess, time
+import numpy, pandas, copy, os, datetime, subprocess, time, sys
 import ipyparallel as ipp
 
 
@@ -94,7 +94,7 @@ class VoxelOperation:
         slice_count = 200
         blockSize = numpy.ceil(self.total_voxel_ops / slice_count)
         for art_slice in range(slice_count):
-            print('Slice - {0}'.format(art_slice), end="")
+            print('Slice - {0}'.format(art_slice + 1), end="")
             sl_st_time = datetime.datetime.now().replace(microsecond=0)
             data_block, finished = self.__get_data_block(blockSize, art_slice)
             if finished:
@@ -106,7 +106,7 @@ class VoxelOperation:
                 for i in par_results:
                     self.results.modify_temp_result(i.res, i.loc)
             sl_end_time = datetime.datetime.now().replace(microsecond=0)
-            print(' - {0}'.format(sl_end_time - sl_st_time))
+            print(' - Remaining time : {0}'.format((sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
 
 
 def run_par(data_block):
