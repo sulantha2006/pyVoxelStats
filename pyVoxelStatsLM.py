@@ -7,8 +7,9 @@ data_file = 'VoxelStatsTestData/CSV/Data.csv'
 mask_file = 'VoxelStatsTestData/Masks/FullBrain.mnc'
 voxel_vars = ['A', 'C_d']
 filter_string = 'b > 1'
+multi_var_operations = ['A*(-1)']
 
-string_model_obj = StringModel(string_model, voxel_vars)
+string_model_obj = StringModel(string_model, voxel_vars, multi_var_operations)
 data_set = Dataset(data_file, filter_string=filter_string, string_model_obj=string_model_obj)
 masker = Masker('minc', mask_file)
 stats_model = LM(string_model_obj)

@@ -1,4 +1,4 @@
-import numpy, pandas, copy, os, datetime, subprocess, time, sys
+import numpy, pandas, copy, os, datetime, subprocess, time, numexpr
 import ipyparallel as ipp
 
 
@@ -44,6 +44,16 @@ class VoxelOperation:
                 var_data_list.append(self.masker_obj.get_data_from_image(file))
             self.voxel_var_data_map[var] = numpy.vstack(var_data_list)
 
+    def __apply_voxel_ops(self, var_name, var_data):
+        data_dict = {var_name : var_data}
+        for op in self.string_model_obj.multi_var_ops:
+            try:
+                ret_data = numexpr.evaluate(op, local_dict=data_dict)
+                return ret_data
+            except ValueError as e:
+                pass
+        return var_data
+
     def set_up_data_for_op(self):
         if not self.voxel_var_data_map:
             print('Voxel Data not read. Cannot continue.')
@@ -51,11 +61,11 @@ class VoxelOperation:
         else:
             for var in self.string_model_obj._used_vars:
                 if var not in self.string_model_obj._voxel_vars:
-                    self.operation_dataset[var] = dict(data=VarDataAccessPointer(self.dataset_obj._data_table[var], 1),
+                    self.operation_dataset[var] = dict(data=VarDataAccessPointer(self.__apply_voxel_ops(var, self.dataset_obj._data_table[var]), 1),
                                                        shape=self.dataset_obj._data_table[var].shape)
                 else:
                     self.operation_dataset[var] = dict(
-                        data=VarDataAccessPointer(self.voxel_var_data_map[var], self.voxel_var_data_map[var].shape[1]),
+                        data=VarDataAccessPointer(self.__apply_voxel_ops(var, self.voxel_var_data_map[var]), self.voxel_var_data_map[var].shape[1]),
                         shape=self.voxel_var_data_map[var].shape)
         self.total_voxel_ops = max(
             self.operation_dataset[k]['shape'][1] if len(self.operation_dataset[k]['shape']) > 1 else 1 for k in

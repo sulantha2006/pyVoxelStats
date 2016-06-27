@@ -97,10 +97,11 @@ class GLME(StatsModel):
 
 
 class StringModel:
-    def __init__(self, string_model_str, voxel_vars):
+    def __init__(self, string_model_str, voxel_vars, multi_var_ops=None):
         self._string_model_str = string_model_str
         self._voxel_vars = voxel_vars
         self._used_vars = self.__get_used_vars(self._string_model_str)
+        self.multi_var_ops = multi_var_ops
 
     def __get_used_vars(self, string_model):
         all_strings = re.findall(r"[.C\(\w\)\w']+", string_model)
