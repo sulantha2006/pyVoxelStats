@@ -15,6 +15,7 @@ class VoxelOperation:
         self.par_view = None
         self.number_of_engines = 0
 
+
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
         print('Setting up cluster .....', end=' ')
         if not no_start:
@@ -30,8 +31,6 @@ class VoxelOperation:
         self.number_of_engines = len(self.par_view)
         print('Done')
 
-
-
     def set_up(self):
         self.read_voxel_vars()
         self.set_up_data_for_op()
@@ -45,12 +44,14 @@ class VoxelOperation:
             self.voxel_var_data_map[var] = numpy.vstack(var_data_list)
 
     def __apply_voxel_ops(self, var_name, var_data):
+        if not self.string_model_obj.multi_var_ops:
+            return var_data
         data_dict = {var_name : var_data}
         for op in self.string_model_obj.multi_var_ops:
             try:
                 ret_data = numexpr.evaluate(op, local_dict=data_dict)
                 return ret_data
-            except ValueError as e:
+            except:
                 pass
         return var_data
 
@@ -102,11 +103,11 @@ class VoxelOperation:
         return (self.__get_block_from_var_dict(block_var_dict, int(blockSize * block_number)), finished)
 
     def execute(self):
-        slice_count = 200
+        slice_count = self.config['slice_cont']
         blockSize = numpy.ceil(self.total_voxel_ops / slice_count)
         for art_slice in range(slice_count):
-            print('Slice - {0}'.format(art_slice + 1), end="")
-            sl_st_time = datetime.datetime.now().replace(microsecond=0)
+            print('Slice - {0}/{1}'.format(art_slice + 1, slice_count), end="")
+            sl_st_time = datetime.datetime.now()
             data_block, finished = self.__get_data_block(blockSize, art_slice)
             if finished:
                 print('Analysis complete')
@@ -116,7 +117,7 @@ class VoxelOperation:
                 par_results = self.par_view.map_sync(run_par, data_block)
                 for i in par_results:
                     self.results.modify_temp_result(i.res, i.loc)
-            sl_end_time = datetime.datetime.now().replace(microsecond=0)
+            sl_end_time = datetime.datetime.now()
             print(' - Remaining time : {0}'.format((sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
 
 

@@ -1,6 +1,6 @@
 import pandas, re
 import statsmodels.formula.api as smf
-from Util.Params import StatsModelsParams
+from Util.Params import pyVSParams
 
 
 class DataMatrix:
@@ -59,8 +59,8 @@ class LM(StatsModel):
     def __init__(self, string_model):
         StatsModel.__init__(self, 'lm')
         self.string_model = string_model
-        self.model_wise_results_names = StatsModelsParams.ResultsModelWiseResults['lm']
-        self.var_wise_results_names = StatsModelsParams.ResultsModelVariableWiseResults['lm']
+        self.model_wise_results_names = pyVSParams.ResultsModelWiseResults['lm']
+        self.var_wise_results_names = pyVSParams.ResultsModelVariableWiseResults['lm']
 
     def fit(self, data_frame):
         mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
