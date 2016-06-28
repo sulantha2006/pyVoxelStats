@@ -36,20 +36,21 @@ class VoxelOperation(pyVoxelStats):
         print('Done')
 
     def set_up(self):
-        print('Setting up voxel operations ... ', end=' ')
+        print('Setting up voxel operations ... ')
         self.read_voxel_vars()
         self.set_up_data_for_op()
-        print('Done')
 
     def read_voxel_vars(self):
         print('File reading ...', end='')
+        total_files = 0
         for var in self.string_model_obj._voxel_vars:
             list_of_files = self.dataset_obj._data_table[var]
             var_data_list = []
             for file in list_of_files:
                 var_data_list.append(self.masker_obj.get_data_from_image(file))
+                total_files += 1
             self.voxel_var_data_map[var] = numpy.vstack(var_data_list)
-        print('Done. ')
+        print('Done. Total files read : {0}'.format(total_files))
 
     def __apply_voxel_ops(self, var_name, var_data):
         if not self.string_model_obj.multi_var_ops:
