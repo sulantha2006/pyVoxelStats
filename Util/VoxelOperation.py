@@ -111,7 +111,7 @@ class VoxelOperation(pyVoxelStats):
                                                                                          block_number + 1)) - 1))
         return (self.__get_block_from_var_dict(block_var_dict, int(blockSize * block_number)), finished)
 
-    def execute(self):
+    def execute_OLD(self):
         print('Execution started ... ')
         slice_count = int(self.config['VSVoxelOPS']['slice_count'])
         print('Slices - {0}'.format(slice_count))
@@ -130,6 +130,18 @@ class VoxelOperation(pyVoxelStats):
                     self.results.modify_temp_result(i.res, i.loc)
             sl_end_time = datetime.datetime.now()
             print(' - Remaining time : {0}'.format((sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
+
+    def execute(self):
+        print('Execution started ... ')
+        sl_st_time = datetime.datetime.now()
+        self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
+        data_block, finished = self.__get_data_block(self.total_voxel_ops, 0)
+        print('Parallel execution...')
+        par_results = self.par_view.map_sync(run_par, data_block)
+        for i in par_results:
+            self.results.modify_temp_result(i.res, i.loc)
+        sl_end_time = datetime.datetime.now()
+        print('Finished : Total execution time {0}'.format((sl_end_time - sl_st_time)))
 
 
 def run_par(data_block):
