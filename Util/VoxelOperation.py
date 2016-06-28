@@ -24,9 +24,9 @@ class VoxelOperation(pyVoxelStats):
             p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(profile_name)], shell=True)
             time.sleep(5)
             if workers:
-                str_args = ['ipcluster start --profile={1} -n {0}'.format(workers, profile_name)]
+                str_args = ['ipcluster start --profile={1} -n {0} --daemonize'.format(workers, profile_name)]
             else:
-                str_args = ['ipcluster start --profile={0}'.format(profile_name)]
+                str_args = ['ipcluster start --profile={0} --daemonize'.format(profile_name)]
             p = subprocess.Popen(str_args, shell=True)
             time.sleep(60)
         rc = ipp.Client(profile=profile_name)
