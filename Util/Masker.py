@@ -1,9 +1,11 @@
 from Util.FileUtil import FileReaderWriter
 import numpy
+from pyVoxelStats import pyVoxelStats
 
 
-class Masker:
+class Masker(pyVoxelStats):
     def __init__(self, file_type, mask_file):
+        pyVoxelStats.__init__(self)
         self._file_type = file_type
         self._mask_file = mask_file
         self._fileReaderWriter = FileReaderWriter(self._file_type)

@@ -7,7 +7,7 @@ from pyVoxelStats import pyVoxelStats
 class pyVoxelStatsLM(pyVoxelStats):
     def __init__(self, file_type, model_string, csv_file, mask_file, voxel_variables, subset_string=None,
                  multi_variable_operations=None):
-        pyVoxelStats.__init__()
+        pyVoxelStats.__init__(self)
         self.file_type = file_type
         self.string_model = model_string
         self.data_file = csv_file
@@ -40,7 +40,7 @@ class pyVoxelStatsLM(pyVoxelStats):
         self.stats_model = LM(self.string_model_obj)
 
         voxel_op = VoxelOperation(self.string_model_obj, self.data_set, self.masker, self.stats_model)
-        voxel_op.set_up_cluster(self.cluster_profile, self.clus_workers, self.clus_no_start)
+        voxel_op.set_up_cluster(profile_name=self.cluster_profile, workers=self.clus_workers, no_start=self.clus_no_start)
         voxel_op.set_up()
         voxel_op.execute()
         self.res = voxel_op.results.get_results()

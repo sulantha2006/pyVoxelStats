@@ -1,9 +1,11 @@
-import numpy, pandas, copy, os, datetime, subprocess, time, numexpr
+import numpy, pandas, os, datetime, subprocess, time, numexpr
 import ipyparallel as ipp
+from pyVoxelStats import pyVoxelStats
 
 
-class VoxelOperation:
+class VoxelOperation(pyVoxelStats):
     def __init__(self, string_model_obj, dataset_obj, masker_obj, stats_obj):
+        pyVoxelStats.__init__(self)
         self.string_model_obj = string_model_obj
         self.dataset_obj = dataset_obj
         self.masker_obj = masker_obj
@@ -19,29 +21,35 @@ class VoxelOperation:
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
         print('Setting up cluster .....', end=' ')
         if not no_start:
-            p0 = subprocess.Popen(['ipcluster stop'], shell=True)
+            p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(profile_name)], shell=True)
             time.sleep(5)
             if workers:
-                str_args = ['ipcluster start -n {0} --profile {1}'.format(workers, profile_name)]
+                str_args = ['ipcluster start --profile={1} -n {0}'.format(workers, profile_name)]
             else:
                 str_args = ['ipcluster start --profile={0}'.format(profile_name)]
             p = subprocess.Popen(str_args, shell=True)
-            time.sleep(10)
-        self.par_view = ipp.Client()[:]
+            time.sleep(60)
+        rc = ipp.Client(profile=profile_name)
+        print('Connected to {0} workers. '.format(len(rc.ids)), end= "")
+        self.par_view = rc[:]
         self.number_of_engines = len(self.par_view)
         print('Done')
 
     def set_up(self):
+        print('Setting up voxel operations ... ', end=' ')
         self.read_voxel_vars()
         self.set_up_data_for_op()
+        print('Done')
 
     def read_voxel_vars(self):
+        print('File reading ...', end='')
         for var in self.string_model_obj._voxel_vars:
             list_of_files = self.dataset_obj._data_table[var]
             var_data_list = []
             for file in list_of_files:
                 var_data_list.append(self.masker_obj.get_data_from_image(file))
             self.voxel_var_data_map[var] = numpy.vstack(var_data_list)
+        print('Done. ')
 
     def __apply_voxel_ops(self, var_name, var_data):
         if not self.string_model_obj.multi_var_ops:
@@ -80,7 +88,7 @@ class VoxelOperation:
         for i in range(blockSize):
             data = {var: block_variable_dict[var][:, i] for var in vars}
             data_block.append(dict(data_block=pandas.DataFrame.from_dict(data), location=start_loc + i,
-                                   stats_obj=copy.copy(self.stats_obj)))
+                                   stats_obj=self.stats_obj))
         return data_block
 
     def __get_data_block(self, blockSize, block_number):
@@ -103,7 +111,9 @@ class VoxelOperation:
         return (self.__get_block_from_var_dict(block_var_dict, int(blockSize * block_number)), finished)
 
     def execute(self):
-        slice_count = self.config['slice_cont']
+        print('Execution started ... ')
+        slice_count = int(self.config['VSVoxelOPS']['slice_count'])
+        print('Slices - {0}'.format(slice_count))
         blockSize = numpy.ceil(self.total_voxel_ops / slice_count)
         for art_slice in range(slice_count):
             print('Slice - {0}/{1}'.format(art_slice + 1, slice_count), end="")

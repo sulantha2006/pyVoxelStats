@@ -1,5 +1,6 @@
 import nibabel
 import pyminc.volumes.factory as fc
+from pyVoxelStats import pyVoxelStats
 
 
 class FileReaderWriter:
@@ -15,7 +16,10 @@ class FileReaderWriter:
         return self._file_writers[self._file_type]()._save(data, file_name, ref_file)
 
 
-class FileUtil:
+class FileUtil(pyVoxelStats):
+    def __init__(self):
+        pyVoxelStats.__init__(self)
+
     def _load(self, file_name):
         pass
 
@@ -25,7 +29,7 @@ class FileUtil:
 
 class MincUtil(FileUtil):
     def __init__(self):
-        pass
+        FileUtil.__init__(self)
 
     def _load(self, file_name):
         vol_h = fc.volumeFromFile(file_name)
@@ -42,7 +46,7 @@ class MincUtil(FileUtil):
 
 class NiftiUtil(FileUtil):
     def __init__(self):
-        pass
+        FileUtil.__init__()
 
     def _load(self, file_name):
         img = nibabel.load(file_name)

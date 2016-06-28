@@ -1,16 +1,18 @@
 import pandas, re
 import statsmodels.formula.api as smf
-from Util.Params import pyVSParams
+from pyVoxelStats import pyVoxelStats
 
 
-class DataMatrix:
+class DataMatrix(pyVoxelStats):
     def __init__(self):
+        pyVoxelStats.__init__(self)
         self._X = None
         self._Y = None
 
 
-class Dataset:
+class Dataset(pyVoxelStats):
     def __init__(self, file_name, file_type='csv', delimiter=',', filter_string=None, string_model_obj=None):
+        pyVoxelStats.__init__(self)
         self._file_name = file_name
         self._file_type = file_type
         self._delimiter = delimiter
@@ -42,8 +44,9 @@ class Dataset:
         return self._data_table_full[used_vars]
 
 
-class StatsModel():
+class StatsModel(pyVoxelStats):
     def __init__(self, type):
+        pyVoxelStats.__init__(self)
         self._type = type
 
     def fit(self, data_frame):
@@ -59,8 +62,8 @@ class LM(StatsModel):
     def __init__(self, string_model):
         StatsModel.__init__(self, 'lm')
         self.string_model = string_model
-        self.model_wise_results_names = pyVSParams.ResultsModelWiseResults['lm']
-        self.var_wise_results_names = pyVSParams.ResultsModelVariableWiseResults['lm']
+        self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelWiseResults']['lm'].split(',')]
+        self.var_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelVariableWiseResults']['lm'].split(',')]
 
     def fit(self, data_frame):
         mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
@@ -96,8 +99,9 @@ class GLME(StatsModel):
         self.string_model = string_model
 
 
-class StringModel:
+class StringModel(pyVoxelStats):
     def __init__(self, string_model_str, voxel_vars, multi_var_ops=None):
+        pyVoxelStats.__init__(self)
         self._string_model_str = string_model_str
         self._voxel_vars = voxel_vars
         self._used_vars = self.__get_used_vars(self._string_model_str)
