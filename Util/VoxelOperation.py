@@ -96,8 +96,9 @@ class VoxelOperation(pyVoxelStats):
         return data_block
 
     def ParGetBlock(self, i):
-        data = {var: self.package['block_variable_dict'][var][:, i] for var in self.package['vars']}
-        return dict(data_block=data, location=self.package['start_loc'] + i, stats_obj=self.package['stats_obj'])
+        data = {var: self.temp_package['block_variable_dict'][var][:, i] for var in self.temp_package['vars']}
+        return dict(data_block=data, location=self.temp_package['start_loc'] + i,
+                    stats_obj=self.temp_package['stats_obj'])
 
     def __get_data_block(self, blockSize, block_number):
         finished = False
@@ -118,7 +119,7 @@ class VoxelOperation(pyVoxelStats):
                                                                                          block_number + 1)) - 1))
         return (self.__get_block_from_var_dict(block_var_dict, int(blockSize * block_number)), finished)
 
-    def execute_OLD(self):
+    def execute(self):
         print('Execution started ... ')
         slice_count = int(self.config['VSVoxelOPS']['slice_count'])
         print('Slices - {0}'.format(slice_count))
@@ -138,7 +139,7 @@ class VoxelOperation(pyVoxelStats):
             sl_end_time = datetime.datetime.now()
             print(' - Remaining time : {0}'.format((sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
 
-    def execute(self):
+    def execute_OLD(self):
         print('Execution started ... ')
         sl_st_time = datetime.datetime.now()
         self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
@@ -153,7 +154,7 @@ class VoxelOperation(pyVoxelStats):
 
 def run_par(data_block):
     loc = data_block['location']
-    res = data_block['stats_obj'].fit(data_block['data_block'])
+    res = data_block['stats_obj'].fit(pandas.DataFrame.from_dict(data_block['data_block']))
     return ParRes(loc, res)
 
 
