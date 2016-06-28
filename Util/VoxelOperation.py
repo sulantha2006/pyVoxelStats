@@ -1,7 +1,7 @@
 import numpy, pandas, os, datetime, subprocess, time, numexpr
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
-from multiprocessing import Pool
+from multiprocessing import Pool, Manager
 
 
 class VoxelOperation(pyVoxelStats):
@@ -88,15 +88,14 @@ class VoxelOperation(pyVoxelStats):
     def __get_block_from_var_dict(self, block_variable_dict, start_loc):
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
-        self.temp_package = dict(block_variable_dict=block_variable_dict, vars=vars, start_loc=start_loc)
         pool = Pool(processes=24)
-        data_block = pool.map(self.ParGetBlock, range(blockSize))
+        d['block_variable_dict'] = block_variable_dict
+        d['vars'] = vars
+        d['start_loc'] = start_loc
+        d['stats_obj'] = self.stats_obj
+        data_block = pool.map(ParGetBlock, range(blockSize))
         pool.close()
         return data_block
-
-    def ParGetBlock(self, i):
-        data = {var: self.temp_package['block_variable_dict'][var][:, i] for var in self.temp_package['vars']}
-        return dict(data_block=data, location=self.temp_package['start_loc'] + i, stats_obj=self.stats_obj)
 
     def __get_data_block(self, blockSize, block_number):
         finished = False
@@ -149,6 +148,13 @@ class VoxelOperation(pyVoxelStats):
         sl_end_time = datetime.datetime.now()
         print('Finished : Total execution time {0}'.format((sl_end_time - sl_st_time)))
 
+
+d = {}
+
+
+def ParGetBlock(i):
+    data = {var: d['block_variable_dict'][var][:, i] for var in d['vars']}
+    return dict(data_block=data, location=d['start_loc'] + i, stats_obj=d['stats_obj'])
 
 def run_par(data_block):
     loc = data_block['location']
