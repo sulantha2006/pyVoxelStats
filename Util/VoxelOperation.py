@@ -1,6 +1,7 @@
 import numpy, pandas, os, datetime, subprocess, time, numexpr
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
+from multiprocessing import Pool
 
 
 class VoxelOperation(pyVoxelStats):
@@ -16,6 +17,8 @@ class VoxelOperation(pyVoxelStats):
         self.results = None
         self.par_view = None
         self.number_of_engines = 0
+
+        self.temp_package = None
 
 
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
@@ -83,14 +86,18 @@ class VoxelOperation(pyVoxelStats):
         self.results = VoxelOpResultsWrapper(self.total_voxel_ops, self.stats_obj)
 
     def __get_block_from_var_dict(self, block_variable_dict, start_loc):
-        data_block = []
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
-        for i in range(blockSize):
-            data = {var: block_variable_dict[var][:, i] for var in vars}
-            data_block.append(dict(data_block=pandas.DataFrame.from_dict(data), location=start_loc + i,
-                                   stats_obj=self.stats_obj))
+        self.temp_package = dict(block_variable_dict=block_variable_dict, vars=vars, start_loc=start_loc,
+                                 stats_obj=self.stats_obj)
+        with Pool(processes=24) as pool:
+            multiple_results = pool.apply_async(self.ParGetBlock, range(blockSize))
+        data_block = [res.get() for res in multiple_results]
         return data_block
+
+    def ParGetBlock(self, i):
+        data = {var: self.package['block_variable_dict'][var][:, i] for var in self.package['vars']}
+        return dict(data_block=data, location=self.package['start_loc'] + i, stats_obj=self.package['stats_obj'])
 
     def __get_data_block(self, blockSize, block_number):
         finished = False
