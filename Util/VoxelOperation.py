@@ -31,7 +31,7 @@ class VoxelOperation(pyVoxelStats):
             else:
                 str_args = ['ipcluster start --profile={0}'.format(profile_name)]
             p = subprocess.Popen(str_args, shell=True)
-            time.sleep(60)
+            time.sleep(120)
         rc = ipp.Client(profile=profile_name)
         print('Connected to {0} workers. '.format(len(rc.ids)), end= "")
         self.par_view = rc[:]
