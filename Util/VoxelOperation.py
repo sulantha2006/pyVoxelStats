@@ -88,8 +88,7 @@ class VoxelOperation(pyVoxelStats):
     def __get_block_from_var_dict(self, block_variable_dict, start_loc):
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
-        self.temp_package = dict(block_variable_dict=block_variable_dict, vars=vars, start_loc=start_loc,
-                                 stats_obj=self.stats_obj)
+        self.temp_package = dict(block_variable_dict=block_variable_dict, vars=vars, start_loc=start_loc)
         pool = Pool(processes=24)
         data_block = pool.map(self.ParGetBlock, range(blockSize))
         pool.close()
@@ -97,8 +96,7 @@ class VoxelOperation(pyVoxelStats):
 
     def ParGetBlock(self, i):
         data = {var: self.temp_package['block_variable_dict'][var][:, i] for var in self.temp_package['vars']}
-        return dict(data_block=data, location=self.temp_package['start_loc'] + i,
-                    stats_obj=self.temp_package['stats_obj'])
+        return dict(data_block=data, location=self.temp_package['start_loc'] + i, stats_obj=self.stats_obj)
 
     def __get_data_block(self, blockSize, block_number):
         finished = False
