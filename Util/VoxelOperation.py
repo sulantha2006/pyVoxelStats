@@ -1,7 +1,8 @@
 import numpy, pandas, os, datetime, subprocess, time, numexpr
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool
+from ShareObj import ShareObj
 
 
 class VoxelOperation(pyVoxelStats):
@@ -89,10 +90,10 @@ class VoxelOperation(pyVoxelStats):
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
         pool = Pool(processes=24)
-        d['block_variable_dict'] = block_variable_dict
-        d['vars'] = vars
-        d['start_loc'] = start_loc
-        d['stats_obj'] = self.stats_obj
+        ShareObj.block_dict['block_variable_dict'] = block_variable_dict
+        ShareObj.block_dict['var_names'] = vars
+        ShareObj.block_dict['start_loc'] = start_loc
+        ShareObj.block_dict['stats_obj'] = self.stats_obj
         data_block = pool.map(ParGetBlock, range(blockSize))
         pool.close()
         return data_block
@@ -148,13 +149,11 @@ class VoxelOperation(pyVoxelStats):
         sl_end_time = datetime.datetime.now()
         print('Finished : Total execution time {0}'.format((sl_end_time - sl_st_time)))
 
-
-d = {}
-
-
 def ParGetBlock(i):
-    data = {var: d['block_variable_dict'][var][:, i] for var in d['vars']}
-    return dict(data_block=data, location=d['start_loc'] + i, stats_obj=d['stats_obj'])
+    print(ShareObj.block_dict)
+    data = {var: ShareObj.block_dict['block_variable_dict'][var][:, i] for var in ShareObj.block_dict['var_names']}
+    return dict(data_block=data, location=ShareObj.block_dict['start_loc'] + i,
+                stats_obj=ShareObj.block_dict['stats_obj'])
 
 def run_par(data_block):
     loc = data_block['location']
