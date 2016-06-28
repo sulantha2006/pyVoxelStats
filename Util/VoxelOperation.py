@@ -44,14 +44,14 @@ class VoxelOperation(pyVoxelStats):
         self.set_up_data_for_op()
 
     def read_voxel_vars(self):
-        print('File reading ...', end='')
+        print('File reading ...')
         total_files = 0
         for var in self.string_model_obj._voxel_vars:
             list_of_files = self.dataset_obj._data_table[var]
             var_data_list = []
-            for file in list_of_files:
-                var_data_list.append(self.masker_obj.get_data_from_image(file))
-                total_files += 1
+            pool = Pool(processes=24)
+            var_data_list = pool.map(self.masker_obj.get_data_from_image, list_of_files)
+            total_files += len(var_data_list)
             self.voxel_var_data_map[var] = numpy.vstack(var_data_list)
         print('Done. Total files read : {0}'.format(total_files))
 
@@ -90,9 +90,9 @@ class VoxelOperation(pyVoxelStats):
         blockSize = block_variable_dict[vars[0]].shape[1]
         self.temp_package = dict(block_variable_dict=block_variable_dict, vars=vars, start_loc=start_loc,
                                  stats_obj=self.stats_obj)
-        with Pool(processes=24) as pool:
-            multiple_results = pool.apply_async(self.ParGetBlock, range(blockSize))
-        data_block = [res.get() for res in multiple_results]
+        pool = Pool(processes=24)
+        data_block = pool.map(self.ParGetBlock, range(blockSize))
+        pool.close()
         return data_block
 
     def ParGetBlock(self, i):
