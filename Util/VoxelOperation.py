@@ -2,6 +2,7 @@ import numpy, pandas, os, datetime, subprocess, time, numexpr
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
 from multiprocessing import Pool
+from concurrent.futures import ThreadPoolExecutor
 from ShareObj import ShareObj
 
 
@@ -16,10 +17,13 @@ class VoxelOperation(pyVoxelStats):
         self.operation_dataset = {}
         self.total_voxel_ops = None
         self.results = None
+        self.rc = None
         self.par_view = None
         self.number_of_engines = 0
 
         self.temp_package = None
+
+        self.debug = True
 
 
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
@@ -32,11 +36,11 @@ class VoxelOperation(pyVoxelStats):
             else:
                 str_args = ['ipcluster start --profile={0}'.format(profile_name)]
             p = subprocess.Popen(str_args, shell=True)
-            time.sleep(120)
-        rc = ipp.Client(profile=profile_name)
-        print('Connected to {0} workers. '.format(len(rc.ids)), end= "")
-        self.par_view = rc[:]
+            time.sleep(140)
+        self.rc = ipp.Client(profile=profile_name)
+        self.par_view = self.rc.direct_view(targets='all')
         self.number_of_engines = len(self.par_view)
+        print('Connected to {0} workers. '.format(self.number_of_engines))
         print('Done')
 
     def set_up(self):
@@ -54,6 +58,7 @@ class VoxelOperation(pyVoxelStats):
             total_files += len(var_data_list)
             self.voxel_var_data_map[var] = numpy.vstack(var_data_list)
         pool.close()
+        pool.join()
         print('Done. Total files read : {0}'.format(total_files))
 
     def __apply_voxel_ops(self, var_name, var_data):
@@ -87,15 +92,13 @@ class VoxelOperation(pyVoxelStats):
         self.results = VoxelOpResultsWrapper(self.total_voxel_ops, self.stats_obj)
 
     def __get_block_from_var_dict(self, block_variable_dict, start_loc):
+        data_block = []
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
-        pool = Pool(processes=24)
-        ShareObj.block_dict['block_variable_dict'] = block_variable_dict
-        ShareObj.block_dict['var_names'] = vars
-        ShareObj.block_dict['start_loc'] = start_loc
-        ShareObj.block_dict['stats_obj'] = self.stats_obj
-        data_block = pool.map(ParGetBlock, range(blockSize))
-        pool.close()
+        for i in range(blockSize):
+            data = {var: block_variable_dict[var][:, i] for var in vars}
+            data_block.append(dict(data_block=pandas.DataFrame.from_dict(data), location=start_loc + i,
+                                   stats_obj=self.stats_obj))
         return data_block
 
     def __get_data_block(self, blockSize, block_number):
@@ -119,23 +122,37 @@ class VoxelOperation(pyVoxelStats):
 
     def execute(self):
         print('Execution started ... ')
+        ex_st_time = datetime.datetime.now()
         slice_count = int(self.config['VSVoxelOPS']['slice_count'])
         print('Slices - {0}'.format(slice_count))
         blockSize = numpy.ceil(self.total_voxel_ops / slice_count)
+        all_results = []
         for art_slice in range(slice_count):
-            print('Slice - {0}/{1}'.format(art_slice + 1, slice_count), end="")
+            if len(self.par_view) != self.number_of_engines:
+                self.number_of_engines = len(self.par_view)
+                print('Number of engines changed - Connected to - {0} engines.'.format(self.number_of_engines))
+            print('Slice - {0}/{1}'.format(art_slice + 1, slice_count))
             sl_st_time = datetime.datetime.now()
             data_block, finished = self.__get_data_block(blockSize, art_slice)
+            d_end_time = datetime.datetime.now()
+            if self.debug: print('Block creation time - {0}'.format(d_end_time-sl_st_time))
             if finished:
                 print('Analysis complete')
-                return 0
             else:
                 self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
+                pr_st_time = datetime.datetime.now()
                 par_results = self.par_view.map_sync(run_par, data_block)
-                for i in par_results:
-                    self.results.modify_temp_result(i.res, i.loc)
+                pr_end_time = datetime.datetime.now()
+                all_results.extend(par_results)
+                ext_end_time = datetime.datetime.now()
+                if self.debug: print('Parallel time - {0}'.format(pr_end_time - pr_st_time))
+                if self.debug: print('Extend time - {0}'.format(ext_end_time - pr_end_time))
             sl_end_time = datetime.datetime.now()
-            print(' - Remaining time : {0}'.format((sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
+            print(' - Time: {0} - Remaining time : {1}'.format((sl_end_time - sl_st_time), (sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
+        with ThreadPoolExecutor() as executor:
+            executor.map(self.results.modify_temp_result_parallel, all_results)
+        full_end_time = datetime.datetime.now()
+        print('Total execution time {0}'.format((full_end_time - ex_st_time)))
 
     def execute_OLD(self):
         print('Execution started ... ')
@@ -150,14 +167,13 @@ class VoxelOperation(pyVoxelStats):
         print('Finished : Total execution time {0}'.format((sl_end_time - sl_st_time)))
 
 def ParGetBlock(i):
-    print(ShareObj.block_dict)
     data = {var: ShareObj.block_dict['block_variable_dict'][var][:, i] for var in ShareObj.block_dict['var_names']}
-    return dict(data_block=data, location=ShareObj.block_dict['start_loc'] + i,
+    return dict(data_block=pandas.DataFrame.from_dict(data), location=ShareObj.block_dict['start_loc'] + i,
                 stats_obj=ShareObj.block_dict['stats_obj'])
 
 def run_par(data_block):
     loc = data_block['location']
-    res = data_block['stats_obj'].fit(pandas.DataFrame.from_dict(data_block['data_block']))
+    res = data_block['stats_obj'].fit(data_block['data_block'])
     return ParRes(loc, res)
 
 
@@ -188,6 +204,9 @@ class VoxelOpResultsWrapper:
         self.stats_model = stats_model
         self.temp_results = [0] * self.total_ops
         self.results = None
+
+    def modify_temp_result_parallel(self, result):
+        self.modify_temp_result(result.res, result.loc)
 
     def modify_temp_result(self, value, loc):
         self.temp_results.insert(loc, value)

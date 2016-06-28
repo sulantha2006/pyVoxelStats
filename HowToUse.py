@@ -12,6 +12,6 @@ file_type = 'minc'
 
 lm = pyVoxelStatsLM(file_type, model_string, csv_file, mask_file, voxel_variables, subset_string,
                     multi_variable_operations)
-lm.set_up_cluster(profile_name='sgeov')
+lm.set_up_cluster(profile_name='sgeov', no_start=True)
 results = lm.evaluate()
 #lm.save('Output.mnc', 'tvalues', 'C_d')
