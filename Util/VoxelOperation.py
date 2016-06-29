@@ -2,7 +2,6 @@ import numpy, pandas, os, datetime, subprocess, time, numexpr
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
 from multiprocessing import Pool
-from concurrent.futures import ThreadPoolExecutor
 from ShareObj import ShareObj
 
 
@@ -27,7 +26,7 @@ class VoxelOperation(pyVoxelStats):
 
 
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
-        print('Setting up cluster .....', end=' ')
+        print('Setting up cluster .....')
         if not no_start:
             p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(profile_name)], shell=True)
             time.sleep(5)
