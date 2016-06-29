@@ -14,7 +14,7 @@ lm.set_up_cluster(profile_name='sgeov', workers=215, no_start=True)
 #lm.set_up_cluster(profile_name='default')
 results = lm.evaluate()
 
-lm.save('/home/sulantha/Desktop/MMSE_Flu.mnc', 'tvalues', 'Flubet_scan')
+lm.save('/home/sulantha/Desktop/MMSE_Flu.mnc', 'tvalues', 'MMSE')
 
 stats = yappi.get_func_stats()
 stats.save('pstatsreal.stats', type='pstat')
