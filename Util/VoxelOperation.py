@@ -93,13 +93,17 @@ class VoxelOperation(pyVoxelStats):
         self.results = VoxelOpResultsWrapper(self.total_voxel_ops, self.stats_obj)
 
     def __get_block_from_var_dict(self, block_variable_dict, start_loc):
-        data_block = []
         vars = list(block_variable_dict.keys())
         blockSize = block_variable_dict[vars[0]].shape[1]
-        for i in range(blockSize):
-            data = {var: block_variable_dict[var][:, i] for var in vars}
-            data_block.append(dict(data_block=pandas.DataFrame.from_dict(data), location=start_loc + i,
-                                   stats_obj=self.stats_obj))
+        n_subs = block_variable_dict[vars[0]].shape[0]
+        formats = ['{0}f8'] * len(vars)
+        dtype = dict(names=vars, formats=formats)
+        data = numpy.zeros(n_subs, dtype=dtype)
+        for var in vars:
+            data[var] = block_variable_dict[var]
+        f = lambda k: dict(data_block=pandas.DataFrame(numpy.array(data[:][k])), location=start_loc + k,
+                           stats_obj=self.stats_obj)
+        data_block = map(f, range(blockSize))
         return data_block
 
     def __get_data_block(self, blockSize, block_number):
