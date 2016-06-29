@@ -23,7 +23,7 @@ class VoxelOperation(pyVoxelStats):
 
         self.temp_package = None
 
-        self.debug = True
+        self.debug = False
 
 
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
@@ -36,12 +36,14 @@ class VoxelOperation(pyVoxelStats):
             else:
                 str_args = ['ipcluster start --profile={0}'.format(profile_name)]
             p = subprocess.Popen(str_args, shell=True)
-            time.sleep(140)
+            if profile_name == 'default':
+                time.sleep(10)
+            else:
+                time.sleep(140)
         self.rc = ipp.Client(profile=profile_name)
         self.par_view = self.rc.direct_view(targets='all')
         self.number_of_engines = len(self.par_view)
         print('Connected to {0} workers. '.format(self.number_of_engines))
-        print('Done')
 
     def set_up(self):
         print('Setting up voxel operations ... ')
@@ -111,7 +113,7 @@ class VoxelOperation(pyVoxelStats):
             block_var_dict = {}
             for var in self.operation_dataset:
                 block_var_dict[var] = self.operation_dataset[var]['data'].get_data_block(int(blockSize * block_number),
-                                                                                         int(self.total_voxel_ops))
+                                                                                         int(self.total_voxel_ops - 1))
         else:
             block_var_dict = {}
             for var in self.operation_dataset:
@@ -128,9 +130,6 @@ class VoxelOperation(pyVoxelStats):
         blockSize = numpy.ceil(self.total_voxel_ops / slice_count)
         all_results = []
         for art_slice in range(slice_count):
-            if len(self.par_view) != self.number_of_engines:
-                self.number_of_engines = len(self.par_view)
-                print('Number of engines changed - Connected to - {0} engines.'.format(self.number_of_engines))
             print('Slice - {0}/{1}'.format(art_slice + 1, slice_count))
             sl_st_time = datetime.datetime.now()
             data_block, finished = self.__get_data_block(blockSize, art_slice)
@@ -149,8 +148,7 @@ class VoxelOperation(pyVoxelStats):
                 if self.debug: print('Extend time - {0}'.format(ext_end_time - pr_end_time))
             sl_end_time = datetime.datetime.now()
             print(' - Time: {0} - Remaining time : {1}'.format((sl_end_time - sl_st_time), (sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
-        with ThreadPoolExecutor() as executor:
-            executor.map(self.results.modify_temp_result_parallel, all_results)
+        self.results.temp_results = all_results
         full_end_time = datetime.datetime.now()
         print('Total execution time {0}'.format((full_end_time - ex_st_time)))
 
@@ -182,7 +180,6 @@ class ParRes:
         self.loc = loc
         self.res = res
 
-
 class VarDataAccessPointer:
     def __init__(self, var_data, outer_shape):
         self.var_data = var_data
@@ -202,7 +199,7 @@ class VoxelOpResultsWrapper:
     def __init__(self, total_voxel_operations, stats_model):
         self.total_ops = total_voxel_operations
         self.stats_model = stats_model
-        self.temp_results = [0] * self.total_ops
+        self.temp_results = None
         self.results = None
 
     def modify_temp_result_parallel(self, result):
@@ -221,16 +218,18 @@ class VoxelOpResultsWrapper:
         res = {}
         for var in self.stats_model.model_wise_results_names:
             res[var] = numpy.zeros(self.total_ops)
-        model_var_names = self.temp_results[0]['variable_names_in_model_op']
+        model_var_names = self.temp_results[0].res['variable_names_in_model_op']
         for var in self.stats_model.var_wise_results_names:
             res[var] = {name: numpy.zeros(self.total_ops) for name in model_var_names}
 
-        for i in range(self.total_ops):
-            obj = self.temp_results[i]
+        for obj in self.temp_results:
+            i = obj.loc
+            result = obj.res
             for var in self.stats_model.model_wise_results_names:
-                res[var][i] = obj[var]
+                res[var][i] = result[var]
             for var in self.stats_model.var_wise_results_names:
                 for name in model_var_names:
-                    res[var][name][i] = obj[var][name]
+                    res[var][name][i] = result[var][name]
         print('Final results building finished. ')
+        self.temp_results = None
         self.results = res
