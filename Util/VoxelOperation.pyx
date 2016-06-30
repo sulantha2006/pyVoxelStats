@@ -99,17 +99,17 @@ class VoxelOperation(pyVoxelStats):
         n_subs = block_variable_dict[vars[0]].shape[0]
         #formats = ['{0}f8'.format(blockSize)] * len(vars)
         #dtype = dict(names=vars, formats=formats)
-        n_formats = ['1f8'] * len(vars)
+        n_formats = ['f8'] * len(vars)
         n_dtype = dict(names=vars, formats=n_formats)
         #data = numpy.zeros(n_subs, dtype=dtype)
         n_data = numpy.zeros(n_subs, dtype=n_dtype)
 
         def f(k):
             for var in vars:
-                n_data[var][:] = block_variable_dict[var][:, [k]]
+                n_data[var][:] = block_variable_dict[var][:, [k]].T
             return dict(data_block=pandas.DataFrame(n_data), location=start_loc + k, stats_obj=self.stats_obj)
 
-        data_block = map(f, range(blockSize))
+        data_block = [f(x) for x in range(blockSize)]
         return data_block
 
     def __get_data_block(self, blockSize, block_number):
