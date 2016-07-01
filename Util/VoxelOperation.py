@@ -105,7 +105,7 @@ class VoxelOperation(pyVoxelStats):
         #data = numpy.zeros(n_subs, dtype=dtype)
         cdef numpy.ndarray n_data = numpy.zeros(n_subs, dtype=n_dtype)
 
-        def f(k):
+        def f(int k):
             for var in vars:
                 n_data[var][:] = block_variable_dict[var][:, [k]].T
             return dict(data_block=pandas.DataFrame(n_data), location=start_loc + k, stats_obj=self.stats_obj)
