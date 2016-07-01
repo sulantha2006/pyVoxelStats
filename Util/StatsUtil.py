@@ -48,27 +48,14 @@ class StatsModel(pyVoxelStats):
     def __init__(self, type):
         pyVoxelStats.__init__(self)
         self._type = type
+        self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
+                                         self.config['ResultsModelWiseResults'][self._type].split(',')]
+        self.var_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
+                                       self.config['ResultsModelVariableWiseResults'][self._type].split(',')]
 
     def fit(self, data_frame):
         print('Not yet implemented')
         return None
-
-    def filter_result(self, result):
-        print('Not yet implemented')
-        return None
-
-
-class LM(StatsModel):
-    def __init__(self, string_model):
-        StatsModel.__init__(self, 'lm')
-        self.string_model = string_model
-        self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelWiseResults']['lm'].split(',')]
-        self.var_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelVariableWiseResults']['lm'].split(',')]
-
-    def fit(self, data_frame):
-        mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
-        res = mod.fit()
-        return self.filter_result(res)
 
     def filter_result(self, result):
         result_f = {}
@@ -81,13 +68,27 @@ class LM(StatsModel):
         return result_f
 
 
-class GLM(StatsModel):
+class LM(StatsModel):
     def __init__(self, string_model):
+        StatsModel.__init__(self, 'lm')
+        self.string_model = string_model
+
+    def fit(self, data_frame):
+        mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
+        res = mod.fit()
+        return self.filter_result(res)
+
+
+class GLM(StatsModel):
+    def __init__(self, string_model, family_obj):
         StatsModel.__init__(self, 'glm')
         self.string_model = string_model
-        self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelWiseResults']['glm'].split(',')]
-        self.var_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelVariableWiseResults']['glm'].split(',')]
+        self.family_obj = family_obj
 
+    def fit(self, data_frame):
+        mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame, family=self.family_obj)
+        res = mod.fit()
+        return self.filter_result(res)
 
 
 class LME(StatsModel):
