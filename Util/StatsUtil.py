@@ -85,6 +85,9 @@ class GLM(StatsModel):
     def __init__(self, string_model):
         StatsModel.__init__(self, 'glm')
         self.string_model = string_model
+        self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelWiseResults']['glm'].split(',')]
+        self.var_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in self.config['ResultsModelVariableWiseResults']['glm'].split(',')]
+
 
 
 class LME(StatsModel):

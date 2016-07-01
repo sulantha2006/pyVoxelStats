@@ -3,6 +3,7 @@ import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
 from multiprocessing import Pool
 from ShareObj import ShareObj
+cimport numpy
 
 
 class VoxelOperation(pyVoxelStats):
@@ -95,14 +96,14 @@ class VoxelOperation(pyVoxelStats):
 
     def __get_block_from_var_dict(self, block_variable_dict, start_loc):
         vars = list(block_variable_dict.keys())
-        blockSize = block_variable_dict[vars[0]].shape[1]
-        n_subs = block_variable_dict[vars[0]].shape[0]
+        cdef int blockSize = block_variable_dict[vars[0]].shape[1]
+        cdef int n_subs = block_variable_dict[vars[0]].shape[0]
         #formats = ['{0}f8'.format(blockSize)] * len(vars)
         #dtype = dict(names=vars, formats=formats)
         n_formats = ['f8'] * len(vars)
         n_dtype = dict(names=vars, formats=n_formats)
         #data = numpy.zeros(n_subs, dtype=dtype)
-        n_data = numpy.zeros(n_subs, dtype=n_dtype)
+        cdef numpy.ndarray n_data = numpy.zeros(n_subs, dtype=n_dtype)
 
         def f(k):
             for var in vars:
