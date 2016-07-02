@@ -112,10 +112,23 @@ class LME(StatsModel):
         self.string_model = string_model
 
 
-class GLME(StatsModel):
-    def __init__(self, string_model):
-        StatsModel.__init__(self, 'glme')
+class GEE(StatsModel):
+    def __init__(self, string_model, family_obj, covariance_obj, time):
+        StatsModel.__init__(self, 'gee')
         self.string_model = string_model
+        self.family_obj = family_obj
+        self.covariance_obj = covariance_obj
+        self.time=time
+
+    def fit(self, data_frame):
+        mod = smf.gee(formula=self.string_model._string_model_str, data=data_frame, family=self.family_obj,
+                      cov_struct=self.covariance_obj, time=self.time)
+        try:
+            res = mod.fit()
+        except (sme.PerfectSeparationError, sme.MissingDataError) as e:
+            res = None
+            # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        return self.filter_result(res, mod)
 
 
 class StringModel(pyVoxelStats):
