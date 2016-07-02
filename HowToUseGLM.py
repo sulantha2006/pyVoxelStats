@@ -4,7 +4,7 @@ from pyVoxelStatsGLM import pyVoxelStatsGLM
 import yappi
 
 # yappi.start()
-model_string = 'f ~ e + C_d + A'
+model_string = 'h ~ e + C_d + A'
 csv_file = 'VoxelStatsTestData/CSV/Data.csv'
 mask_file = 'VoxelStatsTestData/Masks/cerebellum_full_mask2.mnc'
 voxel_variables = ['A', 'C_d']

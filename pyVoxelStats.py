@@ -21,7 +21,8 @@ class pyVoxelStats:
             cf = configparser.ConfigParser()
             cf.read(config_path)
             config_dict = Util.Params.pyVSParams.config_dict
-            if (config_dict['VSVoxelOPS']['version'] > cf['VSVoxelOPS']['version']) or 'version' not in cf['VSVoxelOPS']:
+            if 'version' not in cf['VSVoxelOPS'] or (
+                config_dict['VSVoxelOPS']['version'] > float(cf['VSVoxelOPS']['version'])):
                 cf = self.set_new_config(config_path=config_path)
             return cf
         else:

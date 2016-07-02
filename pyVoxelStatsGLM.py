@@ -17,10 +17,10 @@ class pyVoxelStatsGLM(pyVoxelStats):
         self.filter_string = subset_string
         self.multi_var_operations = multi_variable_operations
 
-        self.family_obj = self.get_family(family_obj)
         self.family_dict = dict(binomial=smapi.families.Binomial, gamma=smapi.families.Gamma, gaussian=smapi.families.Gaussian,
                                 poisson=smapi.families.Poisson, inversegaussian=smapi.families.InverseGaussian,
                                 negativebinomial=smapi.families.NegativeBinomial)
+        self.family_obj = self.get_family(family_obj)
 
         self.string_model_obj = None
         self.data_set = None

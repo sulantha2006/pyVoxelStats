@@ -23,6 +23,7 @@ class VoxelOperation(pyVoxelStats):
         self.temp_package = None
 
         self.debug = False
+        self.no_parallel = True
 
 
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
@@ -145,7 +146,10 @@ class VoxelOperation(pyVoxelStats):
             else:
                 self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
                 pr_st_time = datetime.datetime.now()
-                par_results = self.par_view.map_sync(run_par, data_block)
+                if self.no_parallel:
+                    par_results = map(run_par, data_block)
+                else:
+                    par_results = self.par_view.map_sync(run_par, data_block)
                 pr_end_time = datetime.datetime.now()
                 all_results.extend(par_results)
                 ext_end_time = datetime.datetime.now()

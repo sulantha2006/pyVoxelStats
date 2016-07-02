@@ -1,5 +1,6 @@
 import pandas, re
 import statsmodels.formula.api as smf
+import statsmodels.tools.sm_exceptions as sme
 from pyVoxelStats import pyVoxelStats
 
 
@@ -57,13 +58,19 @@ class StatsModel(pyVoxelStats):
         print('Not yet implemented')
         return None
 
-    def filter_result(self, result):
+    def filter_result(self, result, model):
         result_f = {}
         for vard in self.model_wise_results_names:
-            result_f[vard] = getattr(result, vard)
-        variable_names_in_model_op = result.model.exog_names
+            if result:
+                result_f[vard] = getattr(result, vard)
+            else:
+                result_f[vard] = 0
+        variable_names_in_model_op = model.exog_names
         for vard in self.var_wise_results_names:
-            result_f[vard] = {name: getattr(result, vard)[name] for name in variable_names_in_model_op}
+            if result:
+                result_f[vard] = {name: getattr(result, vard)[name] for name in variable_names_in_model_op}
+            else:
+                result_f[vard] = {name: 0 for name in variable_names_in_model_op}
         result_f['variable_names_in_model_op'] = variable_names_in_model_op
         return result_f
 
@@ -75,8 +82,12 @@ class LM(StatsModel):
 
     def fit(self, data_frame):
         mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
-        res = mod.fit()
-        return self.filter_result(res)
+        try:
+            res = mod.fit()
+        except (sme.PerfectSeparationError, sme.MissingDataError) as e:
+            res = None
+            # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        return self.filter_result(res, mod)
 
 
 class GLM(StatsModel):
@@ -86,9 +97,13 @@ class GLM(StatsModel):
         self.family_obj = family_obj
 
     def fit(self, data_frame):
-        mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame, family=self.family_obj)
-        res = mod.fit()
-        return self.filter_result(res)
+        mod = smf.glm(formula=self.string_model._string_model_str, data=data_frame, family=self.family_obj)
+        try:
+            res = mod.fit()
+        except (sme.PerfectSeparationError, sme.MissingDataError) as e:
+            res = None
+            # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        return self.filter_result(res, mod)
 
 
 class LME(StatsModel):
