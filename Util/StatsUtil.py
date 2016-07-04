@@ -89,6 +89,20 @@ class LM(StatsModel):
             # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
         return self.filter_result(res, mod)
 
+class RLM(StatsModel):
+    def __init__(self, string_model):
+        StatsModel.__init__(self, 'rlm')
+        self.string_model = string_model
+
+    def fit(self, data_frame):
+        mod = smf.rlm(formula=self.string_model._string_model_str, data=data_frame)
+        try:
+            res = mod.fit()
+        except (sme.PerfectSeparationError, sme.MissingDataError) as e:
+            res = None
+            # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        return self.filter_result(res, mod)
+
 
 class GLM(StatsModel):
     def __init__(self, string_model, family_obj):
@@ -107,9 +121,20 @@ class GLM(StatsModel):
 
 
 class LME(StatsModel):
-    def __init__(self, string_model):
+    def __init__(self, string_model, groups):
         StatsModel.__init__(self, 'lme')
         self.string_model = string_model
+        self.groups = groups
+
+    def fit(self, data_frame):
+        mod = smf.gee(formula=self.string_model._string_model_str, data=data_frame, groups=self.groups)
+        try:
+            res = mod.fit()
+        except (sme.PerfectSeparationError, sme.MissingDataError) as e:
+            res = None
+            # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        return self.filter_result(res, mod)
+
 
 
 class GEE(StatsModel):
@@ -118,7 +143,7 @@ class GEE(StatsModel):
         self.string_model = string_model
         self.family_obj = family_obj
         self.covariance_obj = covariance_obj
-        self.time=time
+        self.time = time
 
     def fit(self, data_frame):
         mod = smf.gee(formula=self.string_model._string_model_str, data=data_frame, family=self.family_obj,
