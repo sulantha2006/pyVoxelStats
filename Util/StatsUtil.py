@@ -138,16 +138,17 @@ class LME(StatsModel):
 
 
 class GEE(StatsModel):
-    def __init__(self, string_model, family_obj, covariance_obj, time):
+    def __init__(self, string_model, family_obj, groups, covariance_obj, time):
         StatsModel.__init__(self, 'gee')
         self.string_model = string_model
         self.family_obj = family_obj
         self.covariance_obj = covariance_obj
         self.time = time
+        self.groups = groups
 
     def fit(self, data_frame):
-        mod = smf.gee(formula=self.string_model._string_model_str, data=data_frame, family=self.family_obj,
-                      cov_struct=self.covariance_obj, time=self.time)
+        mod = smf.gee(formula=self.string_model._string_model_str, groups=self.groups, data=data_frame, family=self.family_obj,
+                      cov_struct=self.covariance_obj)
         try:
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
@@ -165,7 +166,14 @@ class StringModel(pyVoxelStats):
         self.multi_var_ops = multi_var_ops
 
     def __get_used_vars(self, string_model):
-        all_strings = re.findall(r"[.C\(\w\)\w']+", string_model)
+        all_strings = re.findall(r"[.Cs\(\w\)\w']+", string_model)
         all_strings = [re.sub(r'C\(([\w]+)\)', r'\1', st) for st in all_strings]
+        all_strings = [re.sub(r's\(([\w]+)\)', r'\1', st) for st in all_strings]
         unique_vars = set(all_strings)
         return list(unique_vars)
+
+    def add_to_cars(self, string):
+        strs = self.__get_used_vars(string)
+        for s in strs:
+            if s not in self._used_vars:
+                self._used_vars.append(s)

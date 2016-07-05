@@ -1,11 +1,10 @@
 import os, configparser
 import Util.Params.pyVSParams
-from Util.StatsUtil import Dataset, StringModel
-from Util.Masker import Masker
+
 
 
 class pyVoxelStats:
-    def __init__(self, file_type, model_string, csv_file, mask_file, voxel_variables, subset_string=None,
+    def __init__(self, file_type=None, model_string=None, csv_file=None, mask_file=None, voxel_variables=None, subset_string=None,
                  multi_variable_operations=None):
         self.config = self.check_config()
         self.string_model = model_string
@@ -16,10 +15,9 @@ class pyVoxelStats:
         self.filter_string = subset_string
         self.multi_var_operations = multi_variable_operations
 
-        self.string_model_obj = StringModel(self.string_model, self.voxel_vars, self.multi_var_operations)
-        self.data_set = Dataset(self.data_file, filter_string=self.filter_string,
-                                string_model_obj=self.string_model_obj)
-        self.masker = Masker(self.file_type, self.mask_file)
+        self.string_model_obj = None
+        self.data_set = None
+        self.masker = None
 
         self.string_model_obj = None
         self.data_set = None

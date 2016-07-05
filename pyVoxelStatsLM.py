@@ -1,7 +1,8 @@
-from Util.StatsUtil import Dataset, StringModel, LM
-from Util.Masker import Masker
+from Util.StatsUtil import LM
 from Util.VoxelOperation import VoxelOperation
 from pyVoxelStats import pyVoxelStats
+from Util.StatsUtil import Dataset, StringModel
+from Util.Masker import Masker
 
 
 class pyVoxelStatsLM(pyVoxelStats):
