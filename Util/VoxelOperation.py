@@ -277,30 +277,30 @@ class ResultBuilder:
         self.model_var_names = model_var_names
         self.results_good = results_good
         self.man = Manager()
-        self.res = self.man.dict()
 
     def make_result(self):
+        res = self.man.dict()
         if  self.model_wise_results_names:
             for var in self.model_wise_results_names:
-                self.res[var] = numpy.zeros(self.total_ops)
+                res[var] = numpy.zeros(self.total_ops)
         if  self.var_wise_results_names:
             for var in self.var_wise_results_names:
-                self.res[var] = self.man.dict({name: numpy.zeros(self.total_ops) for name in self.model_var_names})
+                res[var] = self.man.dict({name: numpy.zeros(self.total_ops) for name in self.model_var_names})
         tpool = Pool()
-        tpool.map(self.make_result_p, self.temp_results)
-        return self.res
+        tpool.starmap(self.make_result_p, zip(self.temp_results, res))
+        return res
 
-    def make_result_p(self, obj):
+    def make_result_p(self, obj, res):
         i = obj.loc
         result = obj.res
         if  self.model_wise_results_names:
             for var in self.model_wise_results_names:
-                self.res[var][i] = result[var]
+                res[var][i] = result[var]
         if  self.var_wise_results_names:
             for var in self.var_wise_results_names:
                 for name in self.model_var_names:
                     try:
-                        self.res[var][name][i] = result[var][name]
+                        res[var][name][i] = result[var][name]
                     except KeyError as e:
                         ##TODO Add a debug check
                         pass
