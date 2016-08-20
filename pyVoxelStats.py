@@ -29,6 +29,9 @@ class pyVoxelStats:
         self.clus_workers = None
         self.clus_no_start = False
 
+        self.debug = False
+        self.no_parallel = False
+
     def set_new_config(self, config_path):
         config_dict = Util.Params.pyVSParams.config_dict
         os.makedirs(os.path.dirname(config_path), exist_ok=True)

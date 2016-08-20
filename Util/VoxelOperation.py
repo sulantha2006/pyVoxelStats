@@ -1,8 +1,10 @@
-import numpy, pandas, os, datetime, subprocess, time, numexpr
+import numpy, pandas, os, datetime, subprocess, time, numexpr, sys
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
+from multiprocessing.pool import ThreadPool
 from multiprocessing import Pool
 from ShareObj import ShareObj
+
 
 
 class VoxelOperation(pyVoxelStats):
@@ -21,9 +23,6 @@ class VoxelOperation(pyVoxelStats):
         self.number_of_engines = 0
 
         self.temp_package = None
-
-        self.debug = False
-        self.no_parallel = True
 
 
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
@@ -145,6 +144,8 @@ class VoxelOperation(pyVoxelStats):
                 print('Analysis complete')
             else:
                 self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
+                self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVoxelStats'] * self.number_of_engines)
+                self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVoxelStats/Util'] * self.number_of_engines)
                 pr_st_time = datetime.datetime.now()
                 if self.no_parallel:
                     par_results = map(run_par, data_block)
@@ -222,23 +223,84 @@ class VoxelOpResultsWrapper:
             self.__get_final_voxel_op_result()
         return self.results
 
-    def __get_final_voxel_op_result(self):
-        print('Building final results.')
-        res = {}
-        for var in self.stats_model.model_wise_results_names:
-            res[var] = numpy.zeros(self.total_ops)
-        model_var_names = self.temp_results[0].res['variable_names_in_model_op']
-        for var in self.stats_model.var_wise_results_names:
-            res[var] = {name: numpy.zeros(self.total_ops) for name in model_var_names}
+    def get_model_vars_and_params(self):
+        model_wise_results_names = None
+        var_wise_results_names = None
+        model_var_names = None
+        result_good = False
+        for o in self.temp_results: ## This section was added becuase of a problem arised from the GAM analysis. As we use rpy2, if there is an statical error, the result object is None and do not contain any info to
+            # get the variable infomation. So we go through all the results to find the one which is not None to get the relavent information.
+            if o.res:
+                try:
+                    model_var_names = o.res['variable_names_in_model_op']
+                except KeyError:
+                    model_var_names = None
+                result_good = True
+                try:
+                    model_wise_results_names = o.res['model_wise_results_names']
+                    var_wise_results_names = o.res['var_wise_results_names']
+                except:
+                    pass
+                break
+        if not result_good:
+            return None, None, None, result_good
 
-        for obj in self.temp_results:
-            i = obj.loc
-            result = obj.res
-            for var in self.stats_model.model_wise_results_names:
-                res[var][i] = result[var]
-            for var in self.stats_model.var_wise_results_names:
-                for name in model_var_names:
-                    res[var][name][i] = result[var][name]
-        print('Final results building finished. ')
-        self.temp_results = None
-        self.results = res
+        if self.stats_model.model_wise_results_names:
+            model_wise_results_names = self.stats_model.model_wise_results_names
+            var_wise_results_names = self.stats_model.var_wise_results_names
+            return model_wise_results_names, var_wise_results_names, model_var_names, result_good
+        return model_wise_results_names, var_wise_results_names, model_var_names, result_good
+
+    def __get_final_voxel_op_result(self):
+        print('Building final results. This may take a while depending on the dimensions of the images. ')
+
+        model_wise_results_names, var_wise_results_names, model_var_names, results_good = self.get_model_vars_and_params()
+        if results_good:
+            builer = ResultBuilder(self.temp_results, self.total_ops, model_wise_results_names, var_wise_results_names, model_var_names, results_good)
+            self.results = builer.make_result()
+            self.temp_results = None
+            print('Final results building finished. ')
+        else:
+            print('Error in results. None of the results were successful. Check statistical errors. Use no parallel option in VoxelOperation to see the errors at voxel level.')
+            self.temp_results = None
+            self.results = None
+
+
+class ResultBuilder:
+    def __init__(self, temp_results, total_ops, model_wise_results_names, var_wise_results_names, model_var_names, results_good):
+        self.temp_results = temp_results
+        self.total_ops = total_ops
+        self.model_wise_results_names = model_wise_results_names
+        self.var_wise_results_names= var_wise_results_names
+        self.model_var_names = model_var_names
+        self.results_good = results_good
+        self.res = {}
+
+    def make_result(self):
+        if  self.model_wise_results_names:
+            for var in self.model_wise_results_names:
+                self.res[var] = numpy.zeros(self.total_ops)
+        if  self.var_wise_results_names:
+            for var in self.var_wise_results_names:
+                self.res[var] = self.proc_manager.dict({name: numpy.zeros(self.total_ops) for name in self.model_var_names})
+        tpool = ThreadPool()
+        tpool.map(self.make_result_p, self.temp_results)
+        return self.res
+
+
+    def make_result_p(self, obj):
+        i = obj.loc
+        result = obj.res
+        if  self.model_wise_results_names:
+            for var in self.model_wise_results_names:
+                self.res[var][i] = result[var]
+        if  self.var_wise_results_names:
+            for var in self.var_wise_results_names:
+                for name in self.model_var_names:
+                    try:
+                        self.res[var][name][i] = result[var][name]
+                    except KeyError as e:
+                        ##TODO Add a debug check
+                        pass
+
+        return None

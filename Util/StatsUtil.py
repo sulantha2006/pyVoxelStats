@@ -1,7 +1,8 @@
-import pandas, re
+import pandas, re, numpy
 import statsmodels.formula.api as smf
 import statsmodels.tools.sm_exceptions as sme
 from pyVoxelStats import pyVoxelStats
+import numexpr
 
 
 class DataMatrix(pyVoxelStats):
@@ -49,16 +50,22 @@ class StatsModel(pyVoxelStats):
     def __init__(self, type):
         pyVoxelStats.__init__(self)
         self._type = type
-        self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
-                                         self.config['ResultsModelWiseResults'][self._type].split(',')]
-        self.var_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
-                                       self.config['ResultsModelVariableWiseResults'][self._type].split(',')]
+        try:
+            self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
+                                             self.config['ResultsModelWiseResults'][self._type].split(',')]
+        except KeyError:
+            self.model_wise_results_names = None
+        try:
+            self.var_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
+                                           self.config['ResultsModelVariableWiseResults'][self._type].split(',')]
+        except KeyError:
+            self.var_wise_results_names = None
 
     def fit(self, data_frame):
         print('Not yet implemented')
         return None
 
-    def filter_result(self, result, model):
+    def filter_result_statsmodels(self, result, model):
         result_f = {}
         for vard in self.model_wise_results_names:
             if result:
@@ -87,7 +94,7 @@ class LM(StatsModel):
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
             res = None
             # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
-        return self.filter_result(res, mod)
+        return self.filter_result_statsmodels(res, mod)
 
 class RLM(StatsModel):
     def __init__(self, string_model):
@@ -101,7 +108,7 @@ class RLM(StatsModel):
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
             res = None
             # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
-        return self.filter_result(res, mod)
+        return self.filter_result_statsmodels(res, mod)
 
 
 class GLM(StatsModel):
@@ -117,7 +124,7 @@ class GLM(StatsModel):
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
             res = None
             # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
-        return self.filter_result(res, mod)
+        return self.filter_result_statsmodels(res, mod)
 
 
 class LME(StatsModel):
@@ -133,7 +140,7 @@ class LME(StatsModel):
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
             res = None
             # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
-        return self.filter_result(res, mod)
+        return self.filter_result_statsmodels(res, mod)
 
 
 
@@ -154,7 +161,112 @@ class GEE(StatsModel):
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
             res = None
             # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
-        return self.filter_result(res, mod)
+        return self.filter_result_statsmodels(res, mod)
+
+class GAM(StatsModel):
+    def __init__(self, string_model, family_str, method_str):
+        StatsModel.__init__(self, 'gam')
+        self.string_model = string_model
+        self.family_obj = family_str
+        self.method = method_str
+        self.model_wise_results_names = []
+        self.var_wise_results_names = []
+
+    def fit(self, data_frame):
+        import readline
+        import rpy2.robjects as r
+        from rpy2.robjects.packages import importr
+        from rpy2.robjects import pandas2ri
+        pandas2ri.activate()
+        mgcv = importr('mgcv')
+        family = r.r(self.family_obj) if self.family_obj else r.r('gaussian()')
+        method_s = self.method if self.method else 'REML'
+        opt = r.StrVector(['perf'])
+        #ctrl = mgcv.control(maxiter=200)
+        try:
+            res = mgcv.gam(r.Formula(self.string_model._string_model_str), family=family, data=data_frame, method=method_s)
+        except Exception as e:
+            res = None
+            #print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        return self.filter_result_gam(res, None)
+
+    def filter_result_gam(self, result, model):
+        import rpy2.robjects as r
+        if not result:
+            return None
+        summary = r.r.summary(result)
+        model_wise_names = ["deviance", "null.deviance", "df.null", "aic", "scale", "df.residual"]
+        model_wise_names_sum = ["dev.expl", "r.sq"]
+        vars_in_ptable = list(summary.rx2('p.table').dimnames[0])
+        cols_in_ptable = list(summary.rx2('p.table').dimnames[1])
+        vars_in_stable = list(summary.rx2('s.table').dimnames[0])
+        cols_in_stable = list(summary.rx2('s.table').dimnames[1])
+        result_f = {}
+        variable_names_in_model_op = vars_in_ptable + vars_in_stable
+        for vard in model_wise_names:
+            self.model_wise_results_names.append(vard)
+            if result:
+                result_f[vard] = result.rx2(vard)[0]
+            else:
+                result_f[vard] = 0
+        for vard in model_wise_names_sum:
+            self.model_wise_results_names.append(vard)
+            if result:
+                result_f[vard] = summary.rx2(vard)[0]
+            else:
+                result_f[vard] = 0
+        for vard_idx in range(len(cols_in_ptable)):
+            vard_s = 'p.table.{0}'.format(cols_in_ptable[vard_idx])
+            self.var_wise_results_names.append(vard_s)
+            if result:
+                result_f[vard_s] = {vars_in_ptable[name_idx]: summary.rx2('p.table').rx(name_idx+1, True)[vard_idx] for name_idx in range(len(vars_in_ptable))}
+            else:
+                result_f[vard_s] = {vars_in_ptable[name_idx]: 0 for name_idx in range(len(vars_in_ptable))}
+        for vard_idx in range(len(cols_in_stable)):
+            vard_s = 's.table.{0}'.format(cols_in_stable[vard_idx])
+            self.var_wise_results_names.append(vard_s)
+            if result:
+                result_f[vard_s] = {vars_in_stable[name_idx]: summary.rx2('s.table').rx(name_idx + 1, True)[vard_idx] for name_idx in range(len(vars_in_stable))}
+            else:
+                result_f[vard_s] = {vars_in_stable[name_idx]: 0 for name_idx in range(len(vars_in_stable))}
+        result_f['variable_names_in_model_op'] = variable_names_in_model_op
+        result_f['model_wise_results_names'] = self.model_wise_results_names
+        result_f['var_wise_results_names'] = self.var_wise_results_names
+        return result_f
+
+class Power(StatsModel):
+    def __init__(self, string_model):
+        StatsModel.__init__(self, 'power')
+        self.string_model = string_model
+
+    def get_expr_string(self, data_frame):
+        s = self.string_model._string_model_str
+        if 'std' in s:
+            s = s.replace('std', str(data_frame[self.string_model._voxel_vars[0]].std()))
+        if 'mean' in s:
+            s = s.replace('mean', str(data_frame[self.string_model._voxel_vars[0]].mean()))
+        if 'var' in s:
+            s = s.replace('var', str(data_frame[self.string_model._voxel_vars[0]].var()))
+        return s
+
+    def fit(self, data_frame):
+        string_expr = self.get_expr_string(data_frame)
+        try:
+            res = float(numexpr.evaluate(string_expr))
+        except:
+            res = None
+            # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        return self.filter_result_power(res)
+
+    def filter_result_power(self, result):
+        result_f = {}
+        for vard in self.model_wise_results_names:
+            if result:
+                result_f[vard] = numpy.clip(result,-5000,5000)
+            else:
+                result_f[vard] = 0
+        result_f['model_wise_results_names'] = self.model_wise_results_names
+        return result_f
 
 
 class StringModel(pyVoxelStats):

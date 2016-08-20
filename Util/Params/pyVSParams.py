@@ -13,13 +13,14 @@ config_dict = dict(
                                  glm=["aic", "df_model", "df_resid", "deviance", "llf", "llnull", "null_deviance",
                                       "pearson_chi2"],
                                  gee=["ctol", "df_model", "df_resid", "k_constant", "scale",
-                                      "score_norm"]
+                                      "score_norm"],
+                                 power=["ss"]
                                  ),
     ResultsModelVariableWiseResults=dict(lm=["bse", "params", "pvalues", "tvalues"],
                                          glm=["bse", "params", "pvalues", "tvalues"],
                                          gee=["bse", "params", "pvalues", "tvalues"],
                                          lme=["bse", "params", "pvalues", "tvalues"]),
     VSVoxelOPS=dict(slice_count="200",
-                    version=1.02),
+                    version=1.05),
 
 )

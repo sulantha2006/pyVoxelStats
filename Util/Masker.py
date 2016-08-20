@@ -36,6 +36,10 @@ class Masker(pyVoxelStats):
         image_data = self._fileReaderWriter.read_file(image_file)
         return self.__mask_data(image_data)
 
+    def mask_image(self, image_file):
+        image_data = self._fileReaderWriter.read_file(image_file)
+        return self.__mask_data(image_data)
+
     def __rebuild_image_data(self, data):
         # TODO Add rebuild when image dims are higher than mask dims - eg: 4D
         new_image_data = numpy.zeros(self._mask_array.shape, dtype=data.dtype)
