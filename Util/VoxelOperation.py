@@ -253,7 +253,7 @@ class VoxelOpResultsWrapper:
 
     def __get_final_voxel_op_result(self):
         print('Building final results. This may take a while depending on the dimensions of the images. ')
-
+        res_bl_st = datetime.datetime.now()
         model_wise_results_names, var_wise_results_names, model_var_names, results_good = self.get_model_vars_and_params()
         if results_good:
             builer = ResultBuilder(self.temp_results, self.total_ops, model_wise_results_names, var_wise_results_names, model_var_names, results_good)
@@ -264,6 +264,8 @@ class VoxelOpResultsWrapper:
             print('Error in results. None of the results were successful. Check statistical errors. Use no parallel option in VoxelOperation to see the errors at voxel level.')
             self.temp_results = None
             self.results = None
+        res_bl_end = datetime.datetime.now()
+        print('Time taken to build final results: {0}'.format(res_bl_end-res_bl_st))
 
 
 class ResultBuilder:
