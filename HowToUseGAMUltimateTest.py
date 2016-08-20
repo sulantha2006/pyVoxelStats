@@ -13,6 +13,7 @@ lm = pyVoxelStatsGAM(file_type, model_string, csv_file, mask_file, voxel_variabl
 lm.set_up_cluster(profile_name='sgeov', workers=215, no_start=True)
 #lm.set_up_cluster(profile_name='default')
 results = lm.evaluate()
+print(results)
 
 #lm.save('/home/sulantha/Desktop/GAM_VBM.mnc', 'tvalues', 'VBM')
 
