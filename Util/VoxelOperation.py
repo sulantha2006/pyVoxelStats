@@ -285,7 +285,7 @@ class ResultBuilder:
         if  self.var_wise_results_names:
             for var in self.var_wise_results_names:
                 self.res[var] = {name: numpy.zeros(self.total_ops) for name in self.model_var_names}
-        tpool = ThreadPool(processes=12)
+        tpool = ThreadPool(processes=200)
         tpool.map(self.make_result_p, self.temp_results)
         return self.res
 
