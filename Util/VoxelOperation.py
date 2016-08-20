@@ -1,7 +1,7 @@
 import numpy, pandas, os, datetime, subprocess, time, numexpr, sys
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
-from multiprocessing.pool import ThreadPool
+from multiprocessing import Manager
 from multiprocessing import Pool
 from ShareObj import ShareObj
 
@@ -276,7 +276,8 @@ class ResultBuilder:
         self.var_wise_results_names= var_wise_results_names
         self.model_var_names = model_var_names
         self.results_good = results_good
-        self.res = {}
+        self.man = Manager()
+        self.res = self.man.dict()
 
     def make_result(self):
         if  self.model_wise_results_names:
@@ -284,11 +285,10 @@ class ResultBuilder:
                 self.res[var] = numpy.zeros(self.total_ops)
         if  self.var_wise_results_names:
             for var in self.var_wise_results_names:
-                self.res[var] = {name: numpy.zeros(self.total_ops) for name in self.model_var_names}
-        tpool = ThreadPool(processes=200)
+                self.res[var] = self.man.dict({name: numpy.zeros(self.total_ops) for name in self.model_var_names})
+        tpool = Pool()
         tpool.map(self.make_result_p, self.temp_results)
         return self.res
-
 
     def make_result_p(self, obj):
         i = obj.loc
