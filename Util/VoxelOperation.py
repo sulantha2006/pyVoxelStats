@@ -4,7 +4,7 @@ from pyVoxelStats import pyVoxelStats
 from multiprocessing import Manager
 from multiprocessing import Pool
 from ShareObj import ShareObj
-import psutil
+import psutil, itertools
 
 
 
@@ -283,13 +283,13 @@ class ResultBuilder:
         res = self.man.dict()
         if  self.model_wise_results_names:
             for var in self.model_wise_results_names:
-                res[var] = self.man.list([0]*self.total_ops)
+                res[var] = self.man.list(numpy.zeros(self.total_ops))
         if  self.var_wise_results_names:
             for var in self.var_wise_results_names:
-                res[var] = self.man.dict({name: self.man.list([0]*self.total_ops) for name in self.model_var_names})
+                res[var] = self.man.dict({name: self.man.list(numpy.zeros(self.total_ops)) for name in self.model_var_names})
         cpus = psutil.cpu_count()
         tpool = Pool(processes=cpus)
-        tpool.starmap(self.make_result_p, zip(self.temp_results, res))
+        tpool.starmap(self.make_result_p, zip(self.temp_results, itertools.repeat(res)))
         return res
 
     def make_result_p(self, obj, res):
