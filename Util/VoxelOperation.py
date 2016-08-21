@@ -2,8 +2,9 @@ import numpy, pandas, os, datetime, subprocess, time, numexpr, sys
 import ipyparallel as ipp
 from pyVoxelStats import pyVoxelStats
 from multiprocessing import Manager
-from multiprocessing import Pool
+from multiprocessing import Pool, sharedctypes
 from ShareObj import ShareObj
+import psutil
 
 
 
@@ -282,11 +283,12 @@ class ResultBuilder:
         res = self.man.dict()
         if  self.model_wise_results_names:
             for var in self.model_wise_results_names:
-                res[var] = numpy.zeros(self.total_ops)
+                res[var] = sharedctypes.RawArray(numpy.zeros(self.total_ops))
         if  self.var_wise_results_names:
             for var in self.var_wise_results_names:
-                res[var] = self.man.dict({name: numpy.zeros(self.total_ops) for name in self.model_var_names})
-        tpool = Pool()
+                res[var] = self.man.dict({name: sharedctypes.RawArray(numpy.zeros(self.total_ops)) for name in self.model_var_names})
+        cpus = psutil.cpu_count()
+        tpool = Pool(processes=cpus)
         tpool.starmap(self.make_result_p, zip(self.temp_results, res))
         return res
 
