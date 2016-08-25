@@ -277,20 +277,49 @@ class ResultBuilder:
         self.var_wise_results_names= var_wise_results_names
         self.model_var_names = model_var_names
         self.results_good = results_good
-        self.man = Manager()
+
+    # def make_result(self):
+    #     res = self.man.dict()
+    #     if  self.model_wise_results_names:
+    #         for var in self.model_wise_results_names:
+    #             res[var] = self.man.list(numpy.zeros(self.total_ops))
+    #     if  self.var_wise_results_names:
+    #         for var in self.var_wise_results_names:
+    #             res[var] = self.man.dict({name: self.man.list(numpy.zeros(self.total_ops)) for name in self.model_var_names})
+    #     cpus = psutil.cpu_count()
+    #     tpool = Pool(processes=cpus)
+    #     tpool.starmap(self.make_result_p, zip(self.temp_results, itertools.repeat(res)))
+    #     return res
+
+    def value_to_record(self, value):
+        tup = ()
+        if self.model_wise_results_names:
+            tup = tup + tuple(value.res[var] for var in self.model_wise_results_names)
+        if self.var_wise_results_names:
+            tup = tup + tuple(tuple(value.res[var][name] for name in self.model_var_names) for var in self.var_wise_results_names)
+        return tup
+        # return (
+        #     value["v1"],
+        #     value["v2"],
+        #     (
+        #         value["vs"]["x"],
+        #         value["vs"]["y"],
+        #         value["vs"]["z"]
+        #     )
+        # )
 
     def make_result(self):
-        res = self.man.dict()
-        if  self.model_wise_results_names:
+        self.temp_results.sort(key=lambda x: x.loc, reverse=False)
+        dtype = []
+        if self.model_wise_results_names:
             for var in self.model_wise_results_names:
-                res[var] = self.man.list(numpy.zeros(self.total_ops))
-        if  self.var_wise_results_names:
+                dtype.append(("{0}".format(var), "f8"))
+        if self.var_wise_results_names:
             for var in self.var_wise_results_names:
-                res[var] = self.man.dict({name: self.man.list(numpy.zeros(self.total_ops)) for name in self.model_var_names})
-        cpus = psutil.cpu_count()
-        tpool = Pool(processes=cpus)
-        tpool.starmap(self.make_result_p, zip(self.temp_results, itertools.repeat(res)))
-        return res
+                dtype.append(("{0}".format(var), [("{0}".format(name), "f8") for name in self.model_var_names]))
+
+        arr = numpy.fromiter(map(self.value_to_record, self.temp_results), dtype=dtype, count=self.total_ops)
+        return arr
 
     def make_result_p(self, obj, res):
         i = obj.loc
