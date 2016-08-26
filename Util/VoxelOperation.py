@@ -317,6 +317,9 @@ class ResultBuilder:
         if self.var_wise_results_names:
             for var in self.var_wise_results_names:
                 dtype.append(("{0}".format(var), [("{0}".format(name), "f8") for name in self.model_var_names]))
+        print(self.model_wise_results_names)
+        print(self.var_wise_results_names)
+        print(self.model_var_names)
         print(dtype)
         arr = numpy.fromiter(map(self.value_to_record, self.temp_results), dtype=dtype, count=self.total_ops)
         return arr
