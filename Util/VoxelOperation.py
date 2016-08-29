@@ -242,6 +242,13 @@ class VoxelOpResultsWrapper:
                     var_wise_results_names = o.res['var_wise_results_names']
                 except:
                     pass
+                if model_var_names:
+                    var_wise_results_dict = {var_name: set() for var_name in var_wise_results_names}
+                    for name in model_var_names:
+                        for var_wise_name in var_wise_results_names:
+                            if name in o.res[var_wise_name]:
+                                var_wise_results_dict[var_wise_name].add(name)
+                    var_wise_results_dict = {var_name: list(var_wise_results_dict[var_name]) for var_name in var_wise_results_dict}
                 break
         if not result_good:
             return None, None, None, result_good
@@ -249,15 +256,15 @@ class VoxelOpResultsWrapper:
         if self.stats_model.model_wise_results_names:
             model_wise_results_names = self.stats_model.model_wise_results_names
             var_wise_results_names = self.stats_model.var_wise_results_names
-            return model_wise_results_names, var_wise_results_names, model_var_names, result_good
-        return model_wise_results_names, var_wise_results_names, model_var_names, result_good
+            return model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, result_good
+        return model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, result_good
 
     def __get_final_voxel_op_result(self):
         print('Building final results. This may take a while depending on the dimensions of the images. ')
         res_bl_st = datetime.datetime.now()
-        model_wise_results_names, var_wise_results_names, model_var_names, results_good = self.get_model_vars_and_params()
+        model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good = self.get_model_vars_and_params()
         if results_good:
-            builer = ResultBuilder(self.temp_results, self.total_ops, model_wise_results_names, var_wise_results_names, model_var_names, results_good)
+            builer = ResultBuilder(self.temp_results, self.total_ops, model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good)
             self.results = builer.make_result()
             self.temp_results = None
             print('Final results building finished. ')
@@ -270,12 +277,13 @@ class VoxelOpResultsWrapper:
 
 
 class ResultBuilder:
-    def __init__(self, temp_results, total_ops, model_wise_results_names, var_wise_results_names, model_var_names, results_good):
+    def __init__(self, temp_results, total_ops, model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good):
         self.temp_results = temp_results
         self.total_ops = total_ops
-        self.model_wise_results_names = model_wise_results_names
-        self.var_wise_results_names= var_wise_results_names
-        self.model_var_names = model_var_names
+        self.model_wise_results_names = list(set(model_wise_results_names))
+        self.var_wise_results_names= list(set(var_wise_results_names))
+        self.model_var_names = list(set(model_var_names))
+        self.var_wise_results_dict = var_wise_results_dict
         self.results_good = results_good
 
     # def make_result(self):
@@ -296,7 +304,7 @@ class ResultBuilder:
         if self.model_wise_results_names:
             tup = tup + tuple(value.res[var] for var in self.model_wise_results_names)
         if self.var_wise_results_names:
-            tup = tup + tuple(tuple(value.res[var][name] for name in self.model_var_names) for var in self.var_wise_results_names)
+            tup = tup + tuple(tuple(value.res[var][name] for name in self.var_wise_results_dict[var]) for var in self.var_wise_results_dict)
         return tup
         # return (
         #     value["v1"],
@@ -315,8 +323,8 @@ class ResultBuilder:
             for var in self.model_wise_results_names:
                 dtype.append(("{0}".format(var), "f8"))
         if self.var_wise_results_names:
-            for var in self.var_wise_results_names:
-                dtype.append(("{0}".format(var), [("{0}".format(name), "f8") for name in self.model_var_names]))
+            for var in self.var_wise_results_dict:
+                dtype.append(("{0}".format(var), [("{0}".format(name), "f8") for name in self.var_wise_results_dict[var]]))
         print(self.model_wise_results_names)
         print(self.var_wise_results_names)
         print(self.model_var_names)
