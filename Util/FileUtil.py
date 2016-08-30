@@ -37,8 +37,8 @@ class MincUtil(FileUtil):
         return data
 
     def _save(self, data, file_name, ref_file):
-        out_h = fc.volumeLikeFile(ref_file, file_name, dtype='short', volumeType='ushort')
-        #out_h = fc.volumeLikeFile(ref_file, file_name)
+        #out_h = fc.volumeLikeFile(ref_file, file_name, dtype='short', volumeType='ushort')
+        out_h = fc.volumeLikeFile(ref_file, file_name)
         out_h.data = data
         out_h.writeFile()
         out_h.closeVolume()

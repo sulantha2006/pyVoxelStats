@@ -79,6 +79,8 @@ class StatsModel(pyVoxelStats):
             else:
                 result_f[vard] = {name: 0 for name in variable_names_in_model_op}
         result_f['variable_names_in_model_op'] = variable_names_in_model_op
+        result_f['model_wise_results_names'] = self.model_wise_results_names
+        result_f['var_wise_results_names'] = self.var_wise_results_names
         return result_f
 
 

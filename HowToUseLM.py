@@ -6,7 +6,7 @@ import yappi
 # yappi.start()
 model_string = 'A ~ e + C_d + C(f)'
 csv_file = 'VoxelStatsTestData/CSV/Data.csv'
-mask_file = 'VoxelStatsTestData/Masks/cerebellum_full_mask2.mnc'
+mask_file = 'VoxelStatsTestData/Masks/FullBrain.mnc'
 voxel_variables = ['A', 'C_d']
 subset_string = 'b > 1'
 multi_variable_operations = ['A*(-1)']

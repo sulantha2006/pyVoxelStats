@@ -241,7 +241,8 @@ class VoxelOpResultsWrapper:
                     model_wise_results_names = o.res['model_wise_results_names']
                     var_wise_results_names = o.res['var_wise_results_names']
                 except:
-                    pass
+                    model_wise_results_names = self.stats_model.model_wise_results_names
+                    var_wise_results_names = self.stats_model.var_wise_results_names
                 if model_var_names:
                     var_wise_results_dict = {var_name: set() for var_name in var_wise_results_names}
                     for name in model_var_names:
