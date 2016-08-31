@@ -1,8 +1,8 @@
 '''Running a Voxel-wise linear model with multiple volumetric variables'''
 
-from pyVoxelStatsGEE import pyVoxelStatsGEE
-import yappi
 import statsmodels.api
+
+from pyVoxelStats.pyVoxelStatsGEE import pyVoxelStatsGEE
 
 # yappi.start()
 model_string = 'h ~ e + C_d + A'

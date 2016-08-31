@@ -1,6 +1,6 @@
 '''Running a Voxel-wise power analysis with multiple volumetric variables'''
 
-from pyVoxelStatsPower import pyVoxelStatsPower
+from pyVoxelStats.pyVoxelStatsPower import pyVoxelStatsPower
 
 model_string = '(0.842 + 1.96)**2 + 2*std**2 / (0.25*mean)**2'
 csv_file = '/home/sulantha/Downloads/table_ADNI_CSF_CN_Sulantha.csv'

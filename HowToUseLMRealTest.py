@@ -1,5 +1,5 @@
-from pyVoxelStatsLM import pyVoxelStatsLM
-import yappi
+from pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
+
 
 #yappi.start()
 model_string = 'Flubet_scan ~ MMSE + Age + C(Gender_code)'

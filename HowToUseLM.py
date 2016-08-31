@@ -1,7 +1,7 @@
 '''Running a Voxel-wise linear model with multiple volumetric variables'''
 
-from pyVoxelStatsLM import pyVoxelStatsLM
-import yappi
+from pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
+
 
 # yappi.start()
 model_string = 'A ~ e + C_d + C(f)'

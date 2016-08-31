@@ -1,11 +1,17 @@
-import numpy, pandas, os, datetime, subprocess, time, numexpr, sys
-import ipyparallel as ipp
-from pyVoxelStats import pyVoxelStats
-from multiprocessing import Manager
 from multiprocessing import Pool
-from ShareObj import ShareObj
-import psutil, itertools
 
+import datetime
+import ipyparallel as ipp
+import numexpr
+import numpy
+import os
+import pandas
+import subprocess
+import sys
+import time
+
+from pyVoxelStats import pyVoxelStats
+from pyVoxelStats.ShareObj import ShareObj
 
 
 class VoxelOperation(pyVoxelStats):

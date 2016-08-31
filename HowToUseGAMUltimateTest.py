@@ -1,5 +1,5 @@
-from pyVoxelStatsGAM import pyVoxelStatsGAM
-import yappi
+from pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
+
 
 #yappi.start()
 model_string = 'fdg ~ s(AV45_pathbl) + s(AV45_bl_norm) + VBM + Age + PTGENDER + APOE + PTEDUCAT'
