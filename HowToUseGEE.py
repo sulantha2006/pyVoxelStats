@@ -18,7 +18,7 @@ cov = statsmodels.api.cov_struct.Exchangeable()
 
 glm = pyVoxelStatsGEE(file_type, model_string, csv_file, mask_file, voxel_variables, family, groups='ID', cov_struct=cov,
                       subset_string=subset_string, multi_variable_operations=multi_variable_operations)
-glm.set_up_cluster(profile_name='sgeov', no_start=True)
+glm.set_up_cluster(no_start=False)
 #glm.set_up_cluster(workers=4)
 results = glm.evaluate()
 

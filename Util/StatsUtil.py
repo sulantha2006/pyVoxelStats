@@ -1,7 +1,7 @@
 import pandas, re, numpy
 import statsmodels.formula.api as smf
 import statsmodels.tools.sm_exceptions as sme
-from pyVoxelStats import pyVoxelStats
+from pyVoxelStats.pyVoxelStats import pyVoxelStats
 import numexpr
 
 

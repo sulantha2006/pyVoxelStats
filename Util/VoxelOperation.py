@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 
-from pyVoxelStats import pyVoxelStats
+from pyVoxelStats.pyVoxelStats import pyVoxelStats
 from pyVoxelStats.ShareObj import ShareObj
 
 

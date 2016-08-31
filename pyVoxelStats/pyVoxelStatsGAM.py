@@ -1,6 +1,6 @@
 from Util.StatsUtil import GAM
 from Util.VoxelOperation import VoxelOperation
-from pyVoxelStats import pyVoxelStats
+from pyVoxelStats.pyVoxelStats import pyVoxelStats
 from Util.StatsUtil import Dataset, StringModel
 from Util.Masker import Masker
 

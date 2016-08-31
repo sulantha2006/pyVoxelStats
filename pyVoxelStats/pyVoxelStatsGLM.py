@@ -1,6 +1,6 @@
 from Util.StatsUtil import GLM
 from Util.VoxelOperation import VoxelOperation
-from pyVoxelStats import pyVoxelStats
+from pyVoxelStats.pyVoxelStats import pyVoxelStats
 import statsmodels.api as smapi
 from Util.StatsUtil import Dataset, StringModel
 from Util.Masker import Masker

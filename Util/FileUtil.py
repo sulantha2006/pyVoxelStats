@@ -1,6 +1,6 @@
 import nibabel
 import pyminc.volumes.factory as fc
-from pyVoxelStats import pyVoxelStats
+from pyVoxelStats.pyVoxelStats import pyVoxelStats
 
 class FileReaderWriter:
     def __init__(self, file_type):

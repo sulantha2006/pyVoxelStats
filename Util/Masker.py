@@ -1,6 +1,6 @@
 from Util.FileUtil import FileReaderWriter
 import numpy
-from pyVoxelStats import pyVoxelStats
+from pyVoxelStats.pyVoxelStats import pyVoxelStats
 
 
 class Masker(pyVoxelStats):
