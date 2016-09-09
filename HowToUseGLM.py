@@ -15,7 +15,7 @@ family = 'binomial' ## This can either be a string or a statsmodels.api.families
 
 glm = pyVoxelStatsGLM(file_type, model_string, csv_file, mask_file, voxel_variables, family, subset_string,
                     multi_variable_operations)
-glm.set_up_cluster(profile_name='sgeov', no_start=True)
+glm.set_up_cluster(no_start=False)
 #glm.set_up_cluster(workers=24)
 results = glm.evaluate()
 

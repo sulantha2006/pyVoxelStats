@@ -162,7 +162,7 @@ class GEE(StatsModel):
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
             res = None
-            # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+            print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
         return self.filter_result_statsmodels(res, mod)
 
 class GAM(StatsModel):

@@ -1,7 +1,6 @@
 from pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
 
 
-#yappi.start()
 model_string = 'fdg ~ s(AV45_pathbl) + s(AV45_bl_norm) + VBM + Age + PTGENDER + APOE + PTEDUCAT'
 csv_file = '/data/data03/tharick/Paper_3/All_baseline_fdg_av45.csv'
 mask_file = '/data/data03/sulantha/quarantine/mni_icbm152_t1_tal_nlin_sym_09a_mask.mnc'
@@ -14,14 +13,3 @@ lm.set_up_cluster(profile_name='sgeov', workers=215, no_start=True)
 #lm.set_up_cluster(profile_name='default')
 results = lm.evaluate()
 
-
-#lm.save('/home/sulantha/Desktop/GAM_VBM.mnc', 'tvalues', 'VBM')
-
-# stats = yappi.get_func_stats()
-# stats.save('pstatsreal.stats', type='pstat')
-# with open('statsreal.stats', 'w') as f:
-#     import pstats
-#
-#     ps = pstats.Stats('pstatsreal.stats', stream=f)
-#     ps.sort_stats('cumtime')
-#     ps.print_stats()
