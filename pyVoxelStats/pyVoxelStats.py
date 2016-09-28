@@ -17,7 +17,6 @@ class pyVoxelStats:
 
         self.string_model_obj = None
         self.data_set = None
-        self.masker = None
 
         self.string_model_obj = None
         self.data_set = None
@@ -30,7 +29,7 @@ class pyVoxelStats:
         self.clus_no_start = False
 
         self.debug = False
-        self.no_parallel = True
+        self.no_parallel = False
 
     def set_new_config(self, config_path):
         config_dict = Util.Params.pyVSParams.config_dict
