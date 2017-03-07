@@ -2,6 +2,10 @@ import os, configparser
 import Util.Params.pyVSParams
 
 class pyVoxelStats:
+    _debug = False
+    _no_parallel = False
+    _save_model = False
+
     def __init__(self, file_type=None, model_string=None, csv_file=None, mask_file=None, voxel_variables=None, subset_string=None,
                  multi_variable_operations=None):
         self.config = self.check_config()
@@ -26,8 +30,14 @@ class pyVoxelStats:
         self.clus_workers = None
         self.clus_no_start = False
 
-        self.debug = False
-        self.no_parallel = False
+    def set_no_parallel(self, bool_val):
+        pyVoxelStats._no_parallel = bool_val
+
+    def enable_save_model(self):
+        pyVoxelStats._save_model = True
+
+    def set_debug(self, bool_val):
+        pyVoxelStats._debug = bool_val
 
     def set_new_config(self, config_path):
         config_dict = Util.Params.pyVSParams.config_dict

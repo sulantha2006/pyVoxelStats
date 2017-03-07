@@ -10,7 +10,11 @@ voxel_variables = ['Flubet_scan']
 file_type = 'minc'
 
 lm = pyVoxelStatsLM(file_type, model_string, csv_file, mask_file, voxel_variables)
-lm.set_up_cluster(profile_name='sgeov', workers=215, no_start=True)
+lm.enable_save_model()
+lm.set_no_parallel(True)
+
+lm.set_up_cluster()
+
 #lm.set_up_cluster(profile_name='default')
 results = lm.evaluate()
 

@@ -151,7 +151,7 @@ class VoxelOperation(pyVoxelStats):
             sl_st_time = datetime.datetime.now()
             data_block, finished = self.__get_data_block(blockSize, art_slice)
             d_end_time = datetime.datetime.now()
-            if self.debug: print('Block creation time - {0}'.format(d_end_time-sl_st_time))
+            if self._debug: print('Block creation time - {0}'.format(d_end_time-sl_st_time))
             if finished:
                 print('Analysis complete')
             else:
@@ -159,15 +159,15 @@ class VoxelOperation(pyVoxelStats):
                 self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVoxelStats'] * self.number_of_engines)
                 self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVoxelStats/Util'] * self.number_of_engines)
                 pr_st_time = datetime.datetime.now()
-                if self.no_parallel:
+                if self._no_parallel:
                     par_results = map(run_par, data_block)
                 else:
                     par_results = self.par_view.map_sync(run_par, data_block)
                 pr_end_time = datetime.datetime.now()
                 all_results.extend(par_results)
                 ext_end_time = datetime.datetime.now()
-                if self.debug: print('Parallel time - {0}'.format(pr_end_time - pr_st_time))
-                if self.debug: print('Extend time - {0}'.format(ext_end_time - pr_end_time))
+                if self._debug: print('Parallel time - {0}'.format(pr_end_time - pr_st_time))
+                if self._debug: print('Extend time - {0}'.format(ext_end_time - pr_end_time))
             sl_end_time = datetime.datetime.now()
             print(' - Time: {0} - Remaining time : {1}'.format((sl_end_time - sl_st_time), (sl_end_time - sl_st_time) * (slice_count - art_slice + 1)))
         self.results.temp_results = all_results

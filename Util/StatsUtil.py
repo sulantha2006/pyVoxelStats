@@ -50,7 +50,7 @@ class StatsModel(pyVoxelStats):
     def __init__(self, type):
         pyVoxelStats.__init__(self)
         self._type = type
-        self.model = None
+
         try:
             self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
                                              self.config['ResultsModelWiseResults'][self._type].split(',')]
@@ -84,6 +84,8 @@ class StatsModel(pyVoxelStats):
         result_f['variable_names_in_model_op'] = variable_names_in_model_op
         result_f['model_wise_results_names'] = self.model_wise_results_names
         result_f['var_wise_results_names'] = self.var_wise_results_names
+        if self._save_model:
+            result_f['model'] = model
         return result_f
 
 
