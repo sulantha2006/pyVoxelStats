@@ -13,6 +13,6 @@ file_type = 'minc'
 
 lm = pyVoxelStatsGAM(file_type, model_string, csv_file, mask_file, voxel_variables, subset_string=subset_string,
                     multi_variable_operations=multi_variable_operations)
-lm.set_up_cluster(profile_name='sgeov', no_start=True)
-#lm.set_up_cluster(workers=4)
+#lm.set_up_cluster(profile_name='sgeov', no_start=True)
+lm.set_up_cluster(workers=56)
 results = lm.evaluate()

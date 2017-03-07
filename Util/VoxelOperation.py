@@ -18,7 +18,7 @@ class VoxelOperation(pyVoxelStats):
         pyVoxelStats.__init__(self)
         self.string_model_obj = string_model_obj
         self.dataset_obj = dataset_obj
-        self.masker_obj = masker_obj
+        self.masker = masker_obj
         self.stats_obj = stats_obj
         self.voxel_var_data_map = {}
         self.operation_dataset = {}
@@ -58,10 +58,16 @@ class VoxelOperation(pyVoxelStats):
     def read_voxel_vars(self):
         print('File reading ...')
         total_files = 0
-        pool = Pool(processes=24)
+        pool = Pool()
         for var in self.string_model_obj._voxel_vars:
             list_of_files = self.dataset_obj._data_table[var]
-            var_data_list = pool.map(self.masker_obj.get_data_from_image, list_of_files)
+            image_data_list = pool.map(self.masker.get_data_from_image, list_of_files)
+            var_data_list = []
+            for image_idx in range(len(image_data_list)):
+                masked_data, need_new_ref = self.masker.mask_image_data(image_data_list[image_idx])
+                if need_new_ref:
+                    self.masker.ref_file = list_of_files[image_idx]
+                var_data_list.append(masked_data)
             total_files += len(var_data_list)
             self.voxel_var_data_map[var] = numpy.vstack(var_data_list)
         pool.close()
@@ -328,10 +334,9 @@ class ResultBuilder:
         if self.var_wise_results_names:
             for var in self.var_wise_results_dict:
                 dtype.append(("{0}".format(var), [("{0}".format(name), "f8") for name in self.var_wise_results_dict[var]]))
-        print(self.model_wise_results_names)
-        print(self.var_wise_results_names)
-        print(self.model_var_names)
-        print(dtype)
+        print('Outputs: Model wise: {0}'.format(self.model_wise_results_names))
+        print('Outputs:  Variable wise: {0}'.format(self.var_wise_results_names))
+        print('Variables names in model: Model wise: {0}'.format(self.model_var_names))
         arr = numpy.fromiter(map(self.value_to_record, self.temp_results), dtype=dtype, count=self.total_ops)
         return arr
 
