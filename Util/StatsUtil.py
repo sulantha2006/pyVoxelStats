@@ -50,6 +50,7 @@ class StatsModel(pyVoxelStats):
     def __init__(self, type):
         pyVoxelStats.__init__(self)
         self._type = type
+        self.model = None
         try:
             self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
                                              self.config['ResultsModelWiseResults'][self._type].split(',')]
@@ -62,8 +63,10 @@ class StatsModel(pyVoxelStats):
             self.var_wise_results_names = None
 
     def fit(self, data_frame):
-        print('Not yet implemented')
-        return None
+        raise NotImplementedError()
+
+    def predict(self, data_frame):
+        raise NotImplementedError()
 
     def filter_result_statsmodels(self, result, model):
         result_f = {}
@@ -85,12 +88,22 @@ class StatsModel(pyVoxelStats):
 
 
 class LM(StatsModel):
-    def __init__(self, string_model):
+    def __init__(self, string_model, weights=None):
         StatsModel.__init__(self, 'lm')
         self.string_model = string_model
+        self.weights = weights
 
     def fit(self, data_frame):
-        mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
+        if self.weights:
+            if isinstance(self.weights, str):
+                mod = smf.wls(formula=self.string_model._string_model_str, data=data_frame, weights=data_frame[self.weights].values)
+            elif isinstance(self.weights, numpy.ndarray) or isinstance(self.weights, float):
+                mod = smf.wls(formula=self.string_model._string_model_str, data=data_frame, weights=self.weights)
+            else:
+                print('Weights either has to be column name, ndarray or a float. Reverting to OLS regression')
+                mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
+        else:
+            mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
         try:
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:

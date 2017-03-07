@@ -1,8 +1,6 @@
 import os, configparser
 import Util.Params.pyVSParams
 
-
-
 class pyVoxelStats:
     def __init__(self, file_type=None, model_string=None, csv_file=None, mask_file=None, voxel_variables=None, subset_string=None,
                  multi_variable_operations=None):
@@ -69,4 +67,4 @@ class pyVoxelStats:
         self.clus_no_start = no_start
 
     def evaluate(self):
-        raise Exception('Not yet implemented')
+        raise NotImplementedError()

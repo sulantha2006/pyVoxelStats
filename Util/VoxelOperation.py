@@ -13,7 +13,6 @@ import time
 from pyVoxelStats.pyVoxelStats import pyVoxelStats
 from pyVoxelStats.ShareObj import ShareObj
 
-
 class VoxelOperation(pyVoxelStats):
     def __init__(self, string_model_obj, dataset_obj, masker_obj, stats_obj):
         pyVoxelStats.__init__(self)
@@ -191,7 +190,6 @@ def run_par(data_block):
     res = data_block['stats_obj'].fit(data_block['data_block'])
     return ParRes(loc, res)
 
-
 class ParRes:
     def __init__(self, loc, res):
         self.loc = loc
@@ -210,7 +208,6 @@ class VarDataAccessPointer:
     def get_data_block(self, loc_1, loc_2):
         data = [self.get_data(loc) for loc in range(loc_1, loc_2 + 1)]
         return numpy.vstack(data).T
-
 
 class VoxelOpResultsWrapper:
     def __init__(self, total_voxel_operations, stats_model):
@@ -281,7 +278,6 @@ class VoxelOpResultsWrapper:
             self.results = None
         res_bl_end = datetime.datetime.now()
         print('Time taken to build final results: {0}'.format(res_bl_end-res_bl_st))
-
 
 class ResultBuilder:
     def __init__(self, temp_results, total_ops, model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good):
