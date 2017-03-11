@@ -29,6 +29,7 @@ class VoxelOperation(pyVoxelStats):
         self.number_of_engines = 0
 
         self.temp_package = None
+        self.predictions = None
 
 
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
@@ -103,6 +104,7 @@ class VoxelOperation(pyVoxelStats):
             self.operation_dataset[k]['shape'][1] if len(self.operation_dataset[k]['shape']) > 1 else 1 for k in
             self.operation_dataset)
         self.results = VoxelOpResultsWrapper(self.total_voxel_ops, self.stats_obj)
+        self.results.save_model = self._save_model
 
 
     def __get_block_from_var_dict(self, block_variable_dict, start_loc):
@@ -139,6 +141,30 @@ class VoxelOperation(pyVoxelStats):
                                                                                          block_number + 1)) - 1))
         return (self.__get_block_from_var_dict(block_var_dict, int(blockSize * block_number)), finished)
 
+    def __get_data_block_wIdx(self, blockSize, block_number, idx):
+        finished = False
+        if (blockSize * block_number) > self.total_voxel_ops:
+            finished = True
+            return ([], [], finished)
+        elif (blockSize * (block_number + 1) > self.total_voxel_ops) & (
+                        blockSize * block_number < self.total_voxel_ops):
+            block_var_dict = {}
+            for var in self.operation_dataset:
+                block_var_dict[var] = self.operation_dataset[var]['data'].get_data_block_wIdx(int(blockSize * block_number),
+                                                                                         int(self.total_voxel_ops - 1), idx)
+        else:
+            block_var_dict = {}
+            for var in self.operation_dataset:
+                block_var_dict[var] = self.operation_dataset[var]['data'].get_data_block_wIdx(int(blockSize * block_number),
+                                                                                         int((blockSize * (
+                                                                                             block_number + 1)) - 1), idx)
+        return (self.__get_block_from_var_dict(block_var_dict, int(blockSize * block_number)), finished)
+
+    def __get_data_block_cv(self, blockSize, block_number, train_idx, test_idx):
+        train_blk, finished = self.__get_data_block_wIdx(blockSize, block_number, train_idx)
+        test_blk, finished = self.__get_data_block_wIdx(blockSize, block_number, test_idx)
+        return train_blk, test_blk, finished
+
     def execute(self):
         print('Execution started ... ')
         ex_st_time = datetime.datetime.now()
@@ -174,17 +200,83 @@ class VoxelOperation(pyVoxelStats):
         full_end_time = datetime.datetime.now()
         print('Total execution time {0}'.format((full_end_time - ex_st_time)))
 
-    def execute_OLD(self):
-        print('Execution started ... ')
-        sl_st_time = datetime.datetime.now()
-        self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
-        data_block, finished = self.__get_data_block(self.total_voxel_ops, 0)
-        print('Parallel execution...')
-        par_results = self.par_view.map_sync(run_par, data_block)
-        for i in par_results:
-            self.results.modify_temp_result(i.res, i.loc)
-        sl_end_time = datetime.datetime.now()
-        print('Finished : Total execution time {0}'.format((sl_end_time - sl_st_time)))
+    def cv_execute(self, cv_generator=None, repeats=1):
+        if not cv_generator:
+            raise Exception('Please provide a scikit learn cross validation generator - Eg: KFold, LOO')
+        if repeats > 1:
+            print('Please make sure the cv generator uses shuffle when using repeats. ')
+
+        print('Cross validation execution started ...')
+        ex_st_time = datetime.datetime.now()
+        slice_count = int(self.config['VSVoxelOPS']['slice_count'])
+        print('Slices - {0}'.format(slice_count))
+        blockSize = numpy.ceil(self.total_voxel_ops / slice_count)
+
+        X = numpy.arange(self.dataset_obj.get_no_subjects())
+        all_results = []
+        all_preds = []
+        all_obs = []
+        for rep in range(repeats):
+            print('In repeat {0}'.format(rep))
+            cv_count = 0
+            rep_results = []
+            rep_preds = numpy.zeros((self.dataset_obj.get_no_subjects(), self.total_voxel_ops))
+            rep_obs = numpy.zeros((self.dataset_obj.get_no_subjects(), self.total_voxel_ops))
+            for train_idx, test_idx in cv_generator.split(X):
+                cv_count += 1
+                print('In CV - {0}'.format(cv_count))
+                cv_k_results = []
+                for art_slice in range(slice_count):
+                    print('Slice - {0}/{1} ; CV - {2} ; Rep - {3}'.format(art_slice + 1, slice_count, cv_count, rep+1))
+                    sl_st_time = datetime.datetime.now()
+                    train_data_block, test_data_block, finished = self.__get_data_block_cv(blockSize, art_slice, train_idx, test_idx)
+                    d_end_time = datetime.datetime.now()
+                    if self._debug: print('Block creation time - {0}'.format(d_end_time - sl_st_time))
+                    if finished:
+                        print('Analysis complete for CV')
+                    else:
+                        self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
+                        self.par_view.map(sys.path.append,
+                                          ['/home/sulantha/PycharmProjects/pyVoxelStats'] * self.number_of_engines)
+                        self.par_view.map(sys.path.append,
+                                          ['/home/sulantha/PycharmProjects/pyVoxelStats/Util'] * self.number_of_engines)
+                        pr_st_time = datetime.datetime.now()
+                        if self._no_parallel:
+                            par_results_wPred = map(run_par_cv, train_data_block, test_data_block)
+                        else:
+                            par_results_wPred = self.par_view.map_sync(run_par_cv, train_data_block, test_data_block)
+                        pr_end_time = datetime.datetime.now()
+                        par_results, preds, obs = zip(*par_results_wPred)
+                        par_results = list(par_results)
+                        preds = list(preds)
+                        obs = list(obs)
+                        cv_k_results.extend(par_results)
+
+                        block_locations = [t_blk_dict['location'] for t_blk_dict in test_data_block]
+                        pred_res_counter = 0
+                        for test_id in test_idx:
+                            rep_preds[test_id, numpy.array(block_locations)] = numpy.array(preds).T[pred_res_counter, :]
+                            rep_obs[test_id, numpy.array(block_locations)] = numpy.array(obs).T[pred_res_counter, :]
+                            pred_res_counter += 1
+                        ext_end_time = datetime.datetime.now()
+                        if self._debug: print('Parallel time - {0}'.format(pr_end_time - pr_st_time))
+                        if self._debug: print('Extend time - {0}'.format(ext_end_time - pr_end_time))
+                    sl_end_time = datetime.datetime.now()
+                    print(' - Time: {0} - Remaining time in this CV : {1}'.format((sl_end_time - sl_st_time),
+                                                                       (sl_end_time - sl_st_time) * (
+                                                                       slice_count - art_slice + 1)))
+
+                rep_results.append(cv_k_results)
+                print('CV - {0} Done. '.format(cv_count))
+            all_results.append(rep_results)
+            all_preds.append(rep_preds)
+            all_obs.append(rep_obs)
+            print('Rep - {0} Done.'.format(rep+1))
+
+        self.results.temp_results = all_results
+        self.predictions = CV_PredsHandler(repeats, all_preds, all_obs[0])
+        full_end_time = datetime.datetime.now()
+        print('Total execution time {0}'.format((full_end_time - ex_st_time)))
 
 def ParGetBlock(i):
     data = {var: ShareObj.block_dict['block_variable_dict'][var][:, i] for var in ShareObj.block_dict['var_names']}
@@ -195,6 +287,14 @@ def run_par(data_block):
     loc = data_block['location']
     res = data_block['stats_obj'].fit(data_block['data_block'])
     return ParRes(loc, res)
+
+def run_par_cv(train_data_block, test_data_block):
+    loc = train_data_block['location']
+    res = train_data_block['stats_obj'].fit(train_data_block['data_block'])
+    preds = train_data_block['stats_obj'].predict(test_data_block['data_block'])
+    obs_var_name = train_data_block['stats_obj'].obs_var_name
+    obs = test_data_block['data_block'][obs_var_name].as_matrix()
+    return ParRes(loc, res), preds, obs
 
 class ParRes:
     def __init__(self, loc, res):
@@ -215,12 +315,21 @@ class VarDataAccessPointer:
         data = [self.get_data(loc) for loc in range(loc_1, loc_2 + 1)]
         return numpy.vstack(data).T
 
+    def get_data_block_wIdx(self, loc_1, loc_2, idx):
+        data = [self.get_data(loc) for loc in range(loc_1, loc_2 + 1)]
+        return numpy.vstack(data).T[idx]
+
 class VoxelOpResultsWrapper:
     def __init__(self, total_voxel_operations, stats_model):
         self.total_ops = total_voxel_operations
         self.stats_model = stats_model
         self.temp_results = None
-        self.results = None
+        self.__results = None
+
+        self.__models = None
+
+        self.save_model = False
+
 
     def modify_temp_result_parallel(self, result):
         self.modify_temp_result(result.res, result.loc)
@@ -229,9 +338,14 @@ class VoxelOpResultsWrapper:
         self.temp_results.insert(loc, value)
 
     def get_results(self):
-        if not self.results:
+        if not self.__results:
             self.__get_final_voxel_op_result()
-        return self.results
+        return self.__results
+
+    def get_models(self):
+        if not self.__models and self.save_model:
+            self.__get_final_voxel_op_result()
+        return self.__models
 
     def get_model_vars_and_params(self):
         model_wise_results_names = None
@@ -275,7 +389,8 @@ class VoxelOpResultsWrapper:
         model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good = self.get_model_vars_and_params()
         if results_good:
             builer = ResultBuilder(self.temp_results, self.total_ops, model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good)
-            self.results = builer.make_result()
+            builer.save_model = self.save_model
+            self.__results, self.__models = builer.make_result()
             self.temp_results = None
             print('Final results building finished. ')
         else:
@@ -294,19 +409,7 @@ class ResultBuilder:
         self.model_var_names = list(set(model_var_names))
         self.var_wise_results_dict = var_wise_results_dict
         self.results_good = results_good
-
-    # def make_result(self):
-    #     res = self.man.dict()
-    #     if  self.model_wise_results_names:
-    #         for var in self.model_wise_results_names:
-    #             res[var] = self.man.list(numpy.zeros(self.total_ops))
-    #     if  self.var_wise_results_names:
-    #         for var in self.var_wise_results_names:
-    #             res[var] = self.man.dict({name: self.man.list(numpy.zeros(self.total_ops)) for name in self.model_var_names})
-    #     cpus = psutil.cpu_count()
-    #     tpool = Pool(processes=cpus)
-    #     tpool.starmap(self.make_result_p, zip(self.temp_results, itertools.repeat(res)))
-    #     return res
+        self.save_model = False
 
     def value_to_record(self, value):
         tup = ()
@@ -315,15 +418,6 @@ class ResultBuilder:
         if self.var_wise_results_names:
             tup = tup + tuple(tuple(value.res[var][name] for name in self.var_wise_results_dict[var]) for var in self.var_wise_results_dict)
         return tup
-        # return (
-        #     value["v1"],
-        #     value["v2"],
-        #     (
-        #         value["vs"]["x"],
-        #         value["vs"]["y"],
-        #         value["vs"]["z"]
-        #     )
-        # )
 
     def make_result(self):
         self.temp_results.sort(key=lambda x: x.loc, reverse=False)
@@ -338,7 +432,10 @@ class ResultBuilder:
         print('Outputs:  Variable wise: {0}'.format(self.var_wise_results_names))
         print('Variables names in model: Model wise: {0}'.format(self.model_var_names))
         arr = numpy.fromiter(map(self.value_to_record, self.temp_results), dtype=dtype, count=self.total_ops)
-        return arr
+        models = None
+        if self.save_model:
+            models = numpy.array([t_res.res['model'] for t_res in self.temp_results])
+        return arr, models
 
     def make_result_p(self, obj, res):
         i = obj.loc
@@ -356,3 +453,21 @@ class ResultBuilder:
                         pass
 
         return None
+
+class CV_PredsHandler:
+    def __init__(self, n_repeats, predictions, obs_data):
+        self.n_repeats = n_repeats
+        self.preds = numpy.array(predictions)
+        self.obs_data = numpy.array(obs_data)
+
+    def get_predictions(self):
+        return self.preds
+
+    def get_mean_prediction(self):
+        return numpy.mean(self.preds, 0)
+
+    def get_error_pred(self):
+        return self.preds - self.obs_data
+
+    def get_rmse(self):
+        return numpy.sqrt(numpy.mean(numpy.square(self.get_mean_prediction() - self.obs_data), axis=0))

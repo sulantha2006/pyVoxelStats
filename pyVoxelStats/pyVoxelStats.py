@@ -24,7 +24,10 @@ class pyVoxelStats:
         self.data_set = None
         self.masker = None
         self.stats_model = None
+
         self.res = None
+        self.models = None
+        self.preds = None
 
         self.cluster_profile = 'default'
         self.clus_workers = None
@@ -70,10 +73,17 @@ class pyVoxelStats:
             self.masker.save_image_from_data(self.res[result_field], file_name)
         print('Saving done.')
 
+    def save_image_data(self, file_name, data):
+        print('Saving - {0} ...'.format(file_name))
+        self.masker.save_image_from_data(data, file_name)
+
     def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
         self.cluster_profile = profile_name
         self.clus_workers = workers
         self.clus_no_start = no_start
 
     def evaluate(self):
+        raise NotImplementedError()
+
+    def cv_evaluate(self, cv_generator=None, repeats=1):
         raise NotImplementedError()

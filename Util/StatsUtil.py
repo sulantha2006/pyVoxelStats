@@ -2,7 +2,7 @@ import pandas, re, numpy
 import statsmodels.formula.api as smf
 import statsmodels.tools.sm_exceptions as sme
 from pyVoxelStats.pyVoxelStats import pyVoxelStats
-import numexpr
+import numexpr, copy
 
 
 class DataMatrix(pyVoxelStats):
@@ -45,11 +45,16 @@ class Dataset(pyVoxelStats):
             used_vars = self.string_model_obj._used_vars
         return self._data_table_full[used_vars]
 
+    def get_no_subjects(self):
+        return len(self._data_table.index)
+
 
 class StatsModel(pyVoxelStats):
     def __init__(self, type):
         pyVoxelStats.__init__(self)
         self._type = type
+        self.mod = None
+        self.obs_var_name = None
 
         try:
             self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
@@ -106,12 +111,24 @@ class LM(StatsModel):
                 mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
         else:
             mod = smf.ols(formula=self.string_model._string_model_str, data=data_frame)
+        self.mod = mod
+        self.obs_var_name = mod.endog_names
         try:
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
             res = None
             # print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
         return self.filter_result_statsmodels(res, mod)
+
+    def predict(self, data_frame):
+        if not self.mod:
+            raise Exception('Model is not fitted. Please fit the model prior to using predict')
+        else:
+            X_vars = copy.deepcopy(self.string_model._used_vars)
+            X_vars.remove(self.mod.endog_names)
+            data_frame = data_frame[X_vars]
+            preds = self.mod.fit().predict(data_frame)
+        return preds
 
 class RLM(StatsModel):
     def __init__(self, string_model):
@@ -120,6 +137,7 @@ class RLM(StatsModel):
 
     def fit(self, data_frame):
         mod = smf.rlm(formula=self.string_model._string_model_str, data=data_frame)
+        self.mod = mod
         try:
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
@@ -136,6 +154,7 @@ class GLM(StatsModel):
 
     def fit(self, data_frame):
         mod = smf.glm(formula=self.string_model._string_model_str, data=data_frame, family=self.family_obj)
+        self.mod = mod
         try:
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
@@ -152,6 +171,7 @@ class LME(StatsModel):
 
     def fit(self, data_frame):
         mod = smf.gee(formula=self.string_model._string_model_str, data=data_frame, groups=self.groups)
+        self.mod = mod
         try:
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
@@ -173,6 +193,7 @@ class GEE(StatsModel):
     def fit(self, data_frame):
         mod = smf.gee(formula=self.string_model._string_model_str, groups=self.groups, data=data_frame, family=self.family_obj,
                       cov_struct=self.covariance_obj)
+        self.mod = mod
         try:
             res = mod.fit()
         except (sme.PerfectSeparationError, sme.MissingDataError) as e:
@@ -205,6 +226,7 @@ class GAM(StatsModel):
         except Exception as e:
             res = None
             #print('Statistics exception; result for the voxel may be set to 0 : ' + str(e))
+        self.mod = res
         return self.filter_result_gam(res, None)
 
     def filter_result_gam(self, result, model):

@@ -20,7 +20,7 @@ config_dict = dict(
                                          glm=["bse", "params", "pvalues", "tvalues"],
                                          gee=["bse", "params", "pvalues", "tvalues"],
                                          lme=["bse", "params", "pvalues", "tvalues"]),
-    VSVoxelOPS=dict(slice_count="200",
-                    version=1.05),
+    VSVoxelOPS=dict(slice_count="20",
+                    version=1.06),
 
 )

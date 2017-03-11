@@ -34,4 +34,4 @@ class pyVoxelStatsGLM(pyVoxelStats):
         voxel_op.set_up()
         voxel_op.execute()
         self.res = voxel_op.results.get_results()
-        return self.res
+        self.models = voxel_op.results.get_models()

@@ -38,4 +38,5 @@ class pyVoxelStatsGEE(pyVoxelStats):
         voxel_op.set_up()
         voxel_op.execute()
         self.res = voxel_op.results.get_results()
+        self.models = voxel_op.results.get_models()
         return self.res
