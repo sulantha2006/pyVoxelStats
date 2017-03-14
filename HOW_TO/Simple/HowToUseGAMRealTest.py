@@ -1,4 +1,4 @@
-from pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
+from pyVoxelStats.pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
 
 
 model_string = 'Flubet_scan ~ s(MMSE) + Age + Gender_code'

@@ -1,6 +1,6 @@
 '''Running a Voxel-wise linear model with 4d image files'''
 
-from pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
+from pyVoxelStats.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
 
 

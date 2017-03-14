@@ -1,4 +1,4 @@
-from pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
+from pyVoxelStats.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
 
 

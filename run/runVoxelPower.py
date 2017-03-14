@@ -1,11 +1,9 @@
-#!/home/sulantha/anaconda3/bin/python
-
 import argparse
 import sys
 
 sys.path.append('/home/sulantha/PycharmProjects/pyVoxelStats')
 sys.path.append('/home/sulantha/PycharmProjects/pyVoxelStats/Util')
-from pyVoxelStats.pyVoxelStatsPower import pyVoxelStatsPower
+from pyVoxelStats.pyVoxelStats.pyVoxelStatsPower import pyVoxelStatsPower
 
 parser = argparse.ArgumentParser(description='pyVoxelStats Voxelwise Power analysis.')
 parser.add_argument('--model', nargs=1, help='Model to evaluate', required=True)

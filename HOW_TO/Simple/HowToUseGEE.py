@@ -2,7 +2,7 @@
 
 import statsmodels.api
 
-from pyVoxelStats.pyVoxelStatsGEE import pyVoxelStatsGEE
+from pyVoxelStats.pyVoxelStats.pyVoxelStatsGEE import pyVoxelStatsGEE
 
 model_string = 'h ~ e + C_d + D'
 csv_file = 'VoxelStatsTestData/CSV/Data.csv'

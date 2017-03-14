@@ -1,6 +1,6 @@
 '''Running a Voxel-wise linear model with multiple volumetric variables'''
 
-from pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
+from pyVoxelStats.pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
 
 
 model_string = 'A ~ s(C_d)'
