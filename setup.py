@@ -1,11 +1,11 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     # Application name:
-    name="pyVS",
+    name="pyVoxelStats",
 
     # Version number (initial):
-    version="0.1.1",
+    version="0.1.1a2",
 
     # Application author details:
     author="Sulantha Mathotaarachchi",
@@ -28,7 +28,7 @@ setup(
 
     # Dependent packages (distributions)
     install_requires=[
-        "nibabel", "pandas", "re", "numpy",
+        "nibabel", "pandas", "numpy",
         "pyminc",
         "statsmodels",
         "rpy2",
