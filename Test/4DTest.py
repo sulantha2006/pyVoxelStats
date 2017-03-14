@@ -1,12 +1,12 @@
 '''Running a Voxel-wise linear model with 4d image files'''
 
-from pyVoxelStats.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
+from pyVS.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
 
 
 model_string = 'NAV_4d ~ PBR_3d + D + C(G)'
-csv_file = '/home/sulantha/PycharmProjects/pyVoxelStats/VoxelStatsTestData/CSV/4D_Rat_data.csv'
-mask_file = '/home/sulantha/PycharmProjects/pyVoxelStats/VoxelStatsTestData/Rat4D/Mask.mnc'
+csv_file = '/home/sulantha/PycharmProjects/pyVS/VoxelStatsTestData/CSV/4D_Rat_data.csv'
+mask_file = '/home/sulantha/PycharmProjects/pyVS/VoxelStatsTestData/Rat4D/Mask.mnc'
 voxel_variables = ['NAV_4d', 'PBR_3d']
 #subset_string = 'b > 1'
 #multi_variable_operations = ['A*(-1)']

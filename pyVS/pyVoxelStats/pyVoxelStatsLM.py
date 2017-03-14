@@ -1,9 +1,9 @@
-from Util.Masker import Masker
-from Util.VoxelOperation import VoxelOperation
+from pyVS.Util.Masker import Masker
+from pyVS.Util.VoxelOperation import VoxelOperation
 
-from pyVoxelStats.Util.StatsUtil import Dataset, StringModel
-from pyVoxelStats.Util.StatsUtil import LM
-from pyVoxelStats.pyVoxelStats import pyVoxelStats
+from pyVS.Util.StatsUtil import Dataset, StringModel
+from pyVS.Util.StatsUtil import LM
+from pyVS.pyVoxelStats.pyVoxelStats import pyVoxelStats
 
 
 class pyVoxelStatsLM(pyVoxelStats):
@@ -18,7 +18,7 @@ class pyVoxelStatsLM(pyVoxelStats):
                                 string_model_obj=self.string_model_obj)
         self.masker = Masker(self.file_type, self.mask_file)
         self.stats_model = LM(self.string_model_obj)
-
+        self.stats_model.save_models = self._save_model
         voxel_op = VoxelOperation(self.string_model_obj, self.data_set, self.masker, self.stats_model)
         voxel_op.set_up_cluster(profile_name=self.cluster_profile, workers=self.clus_workers, no_start=self.clus_no_start)
         voxel_op.set_up()

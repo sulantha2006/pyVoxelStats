@@ -1,6 +1,6 @@
 '''Running a Voxel-wise linear model with multiple volumetric variables'''
 
-from pyVoxelStats.pyVoxelStats.pyVoxelStatsGLM import pyVoxelStatsGLM
+from pyVS.pyVoxelStats.pyVoxelStatsGLM import pyVoxelStatsGLM
 
 
 # yappi.start()

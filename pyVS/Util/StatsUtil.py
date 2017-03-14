@@ -1,7 +1,7 @@
 import pandas, re, numpy
 import statsmodels.formula.api as smf
 import statsmodels.tools.sm_exceptions as sme
-from pyVoxelStats.pyVoxelStats import pyVoxelStats
+from pyVS.pyVoxelStats.pyVoxelStats import pyVoxelStats
 import numexpr, copy
 
 
@@ -55,6 +55,7 @@ class StatsModel(pyVoxelStats):
         self._type = type
         self.mod = None
         self.obs_var_name = None
+        self.save_models = False
 
         try:
             self.model_wise_results_names = [re.sub('\\[|\\]', '', s.strip().replace("'", '')) for s in
@@ -89,7 +90,7 @@ class StatsModel(pyVoxelStats):
         result_f['variable_names_in_model_op'] = variable_names_in_model_op
         result_f['model_wise_results_names'] = self.model_wise_results_names
         result_f['var_wise_results_names'] = self.var_wise_results_names
-        if self._save_model:
+        if self.save_models:
             result_f['model'] = model
         return result_f
 

@@ -1,11 +1,11 @@
 import argparse
 import sys
 
-sys.path.append('/home/sulantha/PycharmProjects/pyVoxelStats')
-sys.path.append('/home/sulantha/PycharmProjects/pyVoxelStats/Util')
-from pyVoxelStats.pyVoxelStats.pyVoxelStatsPower import pyVoxelStatsPower
+sys.path.append('/home/sulantha/PycharmProjects/pyVS')
+sys.path.append('/home/sulantha/PycharmProjects/pyVS/Util')
+from pyVS.pyVoxelStats.pyVoxelStatsPower import pyVoxelStatsPower
 
-parser = argparse.ArgumentParser(description='pyVoxelStats Voxelwise Power analysis.')
+parser = argparse.ArgumentParser(description='pyVS Voxelwise Power analysis.')
 parser.add_argument('--model', nargs=1, help='Model to evaluate', required=True)
 parser.add_argument('--csv', nargs=1, help='CSV file with data', required=True)
 parser.add_argument('--mask', nargs=1, help='Mask file', required=True)

@@ -10,8 +10,8 @@ import numexpr
 import numpy
 import pandas
 
-from pyVoxelStats.pyVoxelStats import pyVoxelStats
-from pyVoxelStats.pyVoxelStats.ShareObj import ShareObj
+from pyVS.pyVoxelStats.pyVoxelStats import pyVoxelStats
+from pyVS.pyVoxelStats.ShareObj import ShareObj
 
 class VoxelOperation(pyVoxelStats):
     def __init__(self, string_model_obj, dataset_obj, masker_obj, stats_obj):
@@ -182,8 +182,8 @@ class VoxelOperation(pyVoxelStats):
                 print('Analysis complete')
             else:
                 self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
-                self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVoxelStats'] * self.number_of_engines)
-                self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVoxelStats/Util'] * self.number_of_engines)
+                #self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVS'] * self.number_of_engines)
+                #self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVS/Util'] * self.number_of_engines)
                 pr_st_time = datetime.datetime.now()
                 if self._no_parallel:
                     par_results = map(run_par, data_block)
@@ -236,10 +236,10 @@ class VoxelOperation(pyVoxelStats):
                         print('Analysis complete for CV')
                     else:
                         self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
-                        self.par_view.map(sys.path.append,
-                                          ['/home/sulantha/PycharmProjects/pyVoxelStats'] * self.number_of_engines)
-                        self.par_view.map(sys.path.append,
-                                          ['/home/sulantha/PycharmProjects/pyVoxelStats/Util'] * self.number_of_engines)
+                        #self.par_view.map(sys.path.append,
+                        #                 ['/home/sulantha/PycharmProjects/pyVS'] * self.number_of_engines)
+                        #self.par_view.map(sys.path.append,
+                        #                  ['/home/sulantha/PycharmProjects/pyVS/Util'] * self.number_of_engines)
                         pr_st_time = datetime.datetime.now()
                         if self._no_parallel:
                             par_results_wPred = map(run_par_cv, train_data_block, test_data_block)
@@ -343,7 +343,7 @@ class VoxelOpResultsWrapper:
         return self.__results
 
     def get_models(self):
-        if not self.__models and self.save_model:
+        if not isinstance(self.__models, numpy.ndarray) and self.save_model:
             self.__get_final_voxel_op_result()
         return self.__models
 
@@ -399,6 +399,7 @@ class VoxelOpResultsWrapper:
             self.results = None
         res_bl_end = datetime.datetime.now()
         print('Time taken to build final results: {0}'.format(res_bl_end-res_bl_st))
+
 
 class ResultBuilder:
     def __init__(self, temp_results, total_ops, model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good):

@@ -1,4 +1,4 @@
-from pyVoxelStats.pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
+from pyVS.pyVoxelStats.pyVoxelStatsGAM import pyVoxelStatsGAM
 
 
 model_string = 'fdg ~ s(AV45_pathbl) + s(AV45_bl_norm) + VBM + Age + PTGENDER + APOE + PTEDUCAT'

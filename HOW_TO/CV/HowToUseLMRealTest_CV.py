@@ -1,6 +1,6 @@
 from sklearn.model_selection import KFold
 
-from pyVoxelStats.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
+from pyVS.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
 model_string = 'Flubet_scan ~ MMSE + Age + C(Gender_code)'
 csv_file = '/data/data03/sulantha/VoxelStatsPaper/CSVs/DataCSV.csv'

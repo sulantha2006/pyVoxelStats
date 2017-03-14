@@ -1,6 +1,6 @@
 '''Running a Voxel-wise linear model with multiple volumetric variables'''
 
-from pyVoxelStats.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
+from pyVS.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
 
 
@@ -20,4 +20,3 @@ lm.set_up_cluster()
 lm.evaluate()
 #lm.set_up_cluster(workers=4)
 results = lm.res
-print(1)

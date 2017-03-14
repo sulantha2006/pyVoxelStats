@@ -1,8 +1,7 @@
 import configparser
 import os
 
-import pyVoxelStats.Util.Params.pyVSParams
-
+import pyVS.Util.Params.pyVSParams as pyvsparams
 
 class pyVoxelStats:
     _debug = False
@@ -46,7 +45,7 @@ class pyVoxelStats:
         pyVoxelStats._debug = bool_val
 
     def set_new_config(self, config_path):
-        config_dict = pyVoxelStats.Util.Params.pyVSParams.config_dict
+        config_dict = pyvsparams.config_dict
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
         cf = configparser.ConfigParser()
         for k in config_dict.keys():
@@ -59,7 +58,7 @@ class pyVoxelStats:
         if os.path.exists(config_path):
             cf = configparser.ConfigParser()
             cf.read(config_path)
-            config_dict = pyVoxelStats.Util.Params.pyVSParams.config_dict
+            config_dict = pyvsparams.config_dict
             if 'version' not in cf['VSVoxelOPS'] or (
                 config_dict['VSVoxelOPS']['version'] > float(cf['VSVoxelOPS']['version'])):
                 cf = self.set_new_config(config_path=config_path)

@@ -1,4 +1,4 @@
-from pyVoxelStats.pyVoxelStats import pyVoxelStats
+from pyVS.pyVoxelStats.pyVoxelStats import pyVoxelStats
 
 class FileReaderWriter:
     def __init__(self, file_type):

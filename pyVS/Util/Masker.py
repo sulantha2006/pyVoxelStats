@@ -1,7 +1,7 @@
 import numpy
 
-from pyVoxelStats.Util.FileUtil import FileReaderWriter
-from pyVoxelStats.pyVoxelStats import pyVoxelStats
+from pyVS.Util.FileUtil import FileReaderWriter
+from pyVS.pyVoxelStats.pyVoxelStats import pyVoxelStats
 
 
 class Masker(pyVoxelStats):

@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     # Application name:
-    name="pyVoxelStats",
+    name="pyVS",
 
     # Version number (initial):
     version="0.1.1",
@@ -12,7 +12,7 @@ setup(
     author_email="sulantha.ms@gmail.com",
 
     # Packages
-    packages=["pyVoxelStats"],
+    packages=["pyVS"],
 
     # Include additional files into the package
     include_package_data=True,
