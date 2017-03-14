@@ -30,9 +30,12 @@ class MincUtil(FileUtil):
 
     def _load(self, file_name):
         import pyminc.volumes.factory as fc
-        vol_h = fc.volumeFromFile(file_name)
-        data = vol_h.getdata()
-        vol_h.closeVolume()
+        try:
+            vol_h = fc.volumeFromFile(file_name)
+            data = vol_h.getdata()
+            vol_h.closeVolume()
+        except Exception as e:
+            raise Exception('Exception in file reading - {0} - {1}'.format(file_name, e))
         return data
 
     def _save(self, data, file_name, ref_file):

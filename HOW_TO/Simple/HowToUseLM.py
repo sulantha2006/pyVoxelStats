@@ -1,15 +1,12 @@
 '''Running a Voxel-wise linear model with multiple volumetric variables'''
-
 from pyVS.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
-
-
-model_string = 'A ~ e + C_d + C(f)'
-csv_file = 'VoxelStatsTestData/CSV/Data.csv'
+model_string = 'A_minc ~ e_val + C_d_minc + C(f)'
+csv_file = 'VoxelStatsTestData/CSV/Data_MT.csv'
 mask_file = 'VoxelStatsTestData/Masks/cerebellum_full_mask2.mnc'
-voxel_variables = ['A', 'C_d']
-subset_string = 'b > 1'
-multi_variable_operations = ['A*(-1)']
+voxel_variables = ['A_minc', 'C_d_minc']
+subset_string = 'b_val > 1'
+multi_variable_operations = ['A_minc*(-1)']
 file_type = 'minc'
 
 lm = pyVoxelStatsLM(file_type, model_string, csv_file, mask_file, voxel_variables, subset_string,
