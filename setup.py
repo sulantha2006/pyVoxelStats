@@ -1,18 +1,18 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     # Application name:
     name="pyVoxelStats",
 
     # Version number (initial):
-    version="0.1.1a2",
+    version="0.1.1a3",
 
     # Application author details:
     author="Sulantha Mathotaarachchi",
     author_email="sulantha.ms@gmail.com",
 
     # Packages
-    packages=["pyVS"],
+    packages=find_packages(),
 
     # Include additional files into the package
     include_package_data=True,
