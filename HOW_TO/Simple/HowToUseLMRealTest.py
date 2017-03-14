@@ -2,12 +2,12 @@ from pyVS.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
 model_string = 'Flubet_scan ~ MMSE + Age + C(Gender_code)'
 csv_file = '/data/data03/sulantha/VoxelStatsPaper/CSVs/DataCSV.csv'
-mask_file = 'VoxelStatsTestData/Masks/cerebellum_mask_rsl_8mm_blur_075_mask2_8mm_test_mask.mnc'
+mask_file = 'VoxelStatsTestData/Masks/FullBrain.mnc'
 voxel_variables = ['Flubet_scan']
 #subset_string = ''
 file_type = 'minc'
 
-lm = pyVoxelStatsLM(file_type, model_string, csv_file, mask_file, voxel_variables)
+lm = pyVoxelStatsLM(file_type, model_string, csv_file, mask_file, voxel_variables, weights=1.0)
 lm.enable_save_model()
 lm.set_no_parallel(True)
 

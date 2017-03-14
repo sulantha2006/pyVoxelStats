@@ -329,3 +329,7 @@ class StringModel(pyVoxelStats):
         for s in strs:
             if s not in self._used_vars:
                 self._used_vars.append(s)
+
+    def add_extra_used_vars(self, var_name):
+        if isinstance(var_name, str):
+            self._used_vars.append(var_name)
