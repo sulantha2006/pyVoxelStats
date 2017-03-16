@@ -35,6 +35,7 @@ class pyVoxelStats:
         self.clus_workers = None
         self.clus_no_start = False
         self.clust_sleep_time = 10
+        self.clust_json = None
 
     def set_no_parallel(self, bool_val):
         pyVoxelStats._no_parallel = bool_val
@@ -80,11 +81,12 @@ class pyVoxelStats:
         print('Saving - {0} ...'.format(file_name))
         self.masker.save_image_from_data(data, file_name)
 
-    def set_up_cluster(self, profile_name='default', workers=None, no_start=False, clust_sleep_time=10):
+    def set_up_cluster(self, clus_json=None, profile_name='default', workers=None, no_start=False, clust_sleep_time=10):
         self.cluster_profile = profile_name
         self.clus_workers = workers
         self.clus_no_start = no_start
         self.clust_sleep_time = clust_sleep_time
+        self.clust_json = clus_json
 
     def evaluate(self):
         raise NotImplementedError()

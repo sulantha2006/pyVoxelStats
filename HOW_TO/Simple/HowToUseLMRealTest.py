@@ -2,7 +2,7 @@ from pyVS.pyVoxelStats.pyVoxelStatsLM import pyVoxelStatsLM
 
 model_string = 'Flubet_scan ~ MMSE + Age + C(Gender_code)'
 csv_file = '/data/data03/sulantha/VoxelStatsPaper/CSVs/DataCSV.csv'
-mask_file = 'VoxelStatsTestData/Masks/FullBrain.mnc'
+mask_file = '/home/sulantha/PycharmProjects/pyVoxelStats/VoxelStatsTestData/Masks/FullBrain.mnc'
 voxel_variables = ['Flubet_scan']
 #subset_string = ''
 file_type = 'minc'
@@ -13,7 +13,8 @@ lm.set_no_parallel(True)
 
 #lm.set_up_cluster()
 
-lm.set_up_cluster(profile_name='sgeovn', no_start=True, clust_sleep_time=140)
+#lm.set_up_cluster(profile_name='sgeovn', no_start=True, clust_sleep_time=140)
+lm.set_up_cluster(clus_json='/home/sulantha/.ipython/profile_sgeovn/security/ipcontroller-client.json')
 lm.evaluate()
 models = lm.models
 res = lm.res
