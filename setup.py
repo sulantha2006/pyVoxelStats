@@ -5,7 +5,7 @@ setup(
     name="pyVoxelStats",
 
     # Version number (initial):
-    version="0.1.1a4",
+    version="0.1.1a8",
 
     # Application author details:
     author="Sulantha Mathotaarachchi",
@@ -14,11 +14,13 @@ setup(
     # Packages
     packages=find_packages(),
 
+    package_data = {'pyVS': ['data/*']},
+
     # Include additional files into the package
     include_package_data=True,
 
     # Details
-    url="http://pypi.python.org/pypi/pyVoxelStats_v011a4/",
+    url="http://pypi.python.org/pypi/pyVoxelStats_v011a8/",
 
     #
     # license="LICENSE.txt",
