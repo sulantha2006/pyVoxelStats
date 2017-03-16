@@ -11,12 +11,12 @@ lm = pyVoxelStatsLM(file_type, model_string, csv_file, mask_file, voxel_variable
 lm.enable_save_model()
 lm.set_no_parallel(True)
 
-lm.set_up_cluster()
+#lm.set_up_cluster()
 
-#lm.set_up_cluster(profile_name='default')
+lm.set_up_cluster(profile_name='sgeovn', no_start=True, clust_sleep_time=140)
 lm.evaluate()
 models = lm.models
 res = lm.res
 
-lm.save('/home/sulantha/Desktop/MMSE_Flu2_pyV.mnc', 'tvalues', 'MMSE')
+#lm.save('/home/sulantha/Desktop/MMSE_Flu2_pyV.mnc', 'tvalues', 'MMSE')
 

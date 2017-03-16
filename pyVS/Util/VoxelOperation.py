@@ -32,7 +32,7 @@ class VoxelOperation(pyVoxelStats):
         self.predictions = None
 
 
-    def set_up_cluster(self, profile_name='default', workers=None, no_start=False):
+    def set_up_cluster(self, profile_name='default', workers=None, no_start=False, clust_sleep_time=10):
         print('Setting up cluster .....')
         if not no_start:
             p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(profile_name)], shell=True)
@@ -43,10 +43,10 @@ class VoxelOperation(pyVoxelStats):
                 str_args = ['ipcluster start --profile={0}'.format(profile_name)]
             p = subprocess.Popen(str_args, shell=True)
             if profile_name == 'default':
-                time.sleep(10)
+                time.sleep(clust_sleep_time)
             else:
-                time.sleep(140)
-        self.rc = ipp.Client(profile=profile_name)
+                time.sleep(clust_sleep_time)
+        self.rc = ipp.Client(profile=str.encode(profile_name))
         self.par_view = self.rc.direct_view(targets='all')
         self.number_of_engines = len(self.par_view)
         print('Connected to {0} workers. '.format(self.number_of_engines))
