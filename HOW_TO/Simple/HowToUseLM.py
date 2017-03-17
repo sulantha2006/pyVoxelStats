@@ -16,4 +16,11 @@ lm.enable_save_model()
 lm.set_up_cluster()
 lm.evaluate()
 #lm.set_up_cluster(workers=4)
-results = lm.res
+#results = lm.res
+
+## Pickle analysis if needed to write results later
+import pickle
+## Saving
+pickle.dump(lm, 'VoxelStatsTestData/Pickles/LM.pkl')
+## Loading Back
+lm2 = pickle.load('VoxelStatsTestData/Pickles/LM.pkl')
