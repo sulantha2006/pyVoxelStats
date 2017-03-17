@@ -5,6 +5,7 @@ try:
     data_path = pyVS.get_data('I34.mnc')
     h1 = fc.volumeFromFile(data_path)
     h = fc.volumeLikeFile(data_path, '{0}/test.mnc'.format(tempfile.gettempdir()))
+    h1.closeVolume()
     h.closeVolume()
     print('MINC IO test successfull. ')
 except Exception as e:
