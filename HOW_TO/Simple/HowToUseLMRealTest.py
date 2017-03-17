@@ -13,8 +13,7 @@ lm.set_no_parallel(True)
 
 #lm.set_up_cluster()
 
-#lm.set_up_cluster(profile_name='sgeovn', no_start=True, clust_sleep_time=140)
-lm.set_up_cluster(clus_json='/home/sulantha/.ipython/profile_sgeovn/security/ipcontroller-client.json')
+lm.set_up_cluster(profile_name='sgeovn', no_start=True, clust_sleep_time=140)
 lm.evaluate()
 models = lm.models
 res = lm.res

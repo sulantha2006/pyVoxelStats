@@ -5,7 +5,7 @@ setup(
     name="pyVoxelStats",
 
     # Version number (initial):
-    version="0.1.1a10",
+    version="0.1.1a12",
 
     # Application author details:
     author="Sulantha Mathotaarachchi",
@@ -20,7 +20,7 @@ setup(
     include_package_data=True,
 
     # Details
-    url="http://pypi.python.org/pypi/pyVoxelStats_v011a10/",
+    url="http://pypi.python.org/pypi/pyVoxelStats_v011a12/",
 
     #
     # license="LICENSE.txt",
