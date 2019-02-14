@@ -33,26 +33,27 @@ class VoxelOperation(pyVoxelStats):
 
 
     def set_up_cluster(self, clus_json=None, profile_name='default', workers=None, no_start=False, clust_sleep_time=10):
-        print('Setting up cluster .....')
-        if clus_json:
-            self.rc = ipp.Client(clus_json)
-        else:
-            if not no_start:
-                p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(profile_name)], shell=True)
-                time.sleep(5)
-                if workers:
-                    str_args = ['ipcluster start --profile={1} -n {0}'.format(workers, profile_name)]
-                else:
-                    str_args = ['ipcluster start --profile={0}'.format(profile_name)]
-                p = subprocess.Popen(str_args, shell=True)
-                if profile_name == 'default':
-                    time.sleep(clust_sleep_time)
-                else:
-                    time.sleep(clust_sleep_time)
-            self.rc = ipp.Client(profile=str.encode(profile_name))
-        self.par_view = self.rc.direct_view(targets='all')
-        self.number_of_engines = len(self.par_view)
-        print('Connected to {0} workers. '.format(self.number_of_engines))
+        if not pyVoxelStats._no_parallel:
+            print('Setting up cluster .....')
+            if clus_json:
+                self.rc = ipp.Client(clus_json)
+            else:
+                if not no_start:
+                    p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(profile_name)], shell=True)
+                    time.sleep(5)
+                    if workers:
+                        str_args = ['ipcluster start --profile={1} -n {0}'.format(workers, profile_name)]
+                    else:
+                        str_args = ['ipcluster start --profile={0}'.format(profile_name)]
+                    p = subprocess.Popen(str_args, shell=True)
+                    if profile_name == 'default':
+                        time.sleep(clust_sleep_time)
+                    else:
+                        time.sleep(clust_sleep_time)
+                self.rc = ipp.Client(profile=str.encode(profile_name))
+            self.par_view = self.rc.direct_view(targets='all')
+            self.number_of_engines = len(self.par_view)
+            print('Connected to {0} workers. '.format(self.number_of_engines))
 
     def set_up(self):
         print('Setting up voxel operations ... ')
@@ -184,13 +185,11 @@ class VoxelOperation(pyVoxelStats):
             if finished:
                 print('Analysis complete')
             else:
-                self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
-                #self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVS'] * self.number_of_engines)
-                #self.par_view.map(sys.path.append, ['/home/sulantha/PycharmProjects/pyVS/Util'] * self.number_of_engines)
                 pr_st_time = datetime.datetime.now()
                 if self._no_parallel:
                     par_results = map(run_par, data_block)
                 else:
+                    self.par_view.map(os.chdir, [os.getcwd()] * self.number_of_engines)
                     par_results = self.par_view.map_sync(run_par, data_block)
                 pr_end_time = datetime.datetime.now()
                 all_results.extend(par_results)
@@ -376,6 +375,8 @@ class VoxelOpResultsWrapper:
                             if name in o.res[var_wise_name]:
                                 var_wise_results_dict[var_wise_name].add(name)
                     var_wise_results_dict = {var_name: list(var_wise_results_dict[var_name]) for var_name in var_wise_results_dict}
+                else:
+                    var_wise_results_dict = None
                 break
         if not result_good:
             return None, None, None, result_good
@@ -408,9 +409,9 @@ class ResultBuilder:
     def __init__(self, temp_results, total_ops, model_wise_results_names, var_wise_results_names, model_var_names, var_wise_results_dict, results_good):
         self.temp_results = temp_results
         self.total_ops = total_ops
-        self.model_wise_results_names = list(set(model_wise_results_names))
-        self.var_wise_results_names= list(set(var_wise_results_names))
-        self.model_var_names = list(set(model_var_names))
+        self.model_wise_results_names = list(set(model_wise_results_names)) if model_wise_results_names else None
+        self.var_wise_results_names= list(set(var_wise_results_names)) if var_wise_results_names else None
+        self.model_var_names = list(set(model_var_names)) if model_var_names else None
         self.var_wise_results_dict = var_wise_results_dict
         self.results_good = results_good
         self.save_model = False

@@ -1,0 +1,5 @@
+modify setup.py with relevant details
+modify changes.txt
+
+python setup.py bdist_wheel
+twine upload dist/XXX

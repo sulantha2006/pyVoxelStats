@@ -308,6 +308,89 @@ class Power(StatsModel):
         result_f['model_wise_results_names'] = self.model_wise_results_names
         return result_f
 
+class Pcorr(StatsModel):
+    def __init__(self, string_model, var_y, var_x):
+        StatsModel.__init__(self, 'pcorr')
+        self.string_model = string_model
+        self.var_y = var_y
+        self.var_x = var_x
+
+    def fit(self, data_frame):
+        import patsy
+        dmatrices  = patsy.dmatrices(self.string_model._string_model_str, data_frame)
+        y = dmatrices[0]
+        x = dmatrices[1]
+        col_indxs = x.design_info.column_name_indexes
+        var_x_idx = col_indxs[self.var_x]
+        C = numpy.hstack([y, x])
+
+        dof = C.shape[0] - 2 - (C.shape[1] - 2 - 1)  ### n-2-k k = number of variables except the two in question, -1 to remove intercept
+        try:
+            res = self.parr_corr_idx(C, 0+1, var_x_idx+1+1) ## We added the y column at the beginning. So, we have to increase the index
+        except:
+            res=None
+
+        return self.filter_results_pcorr(res, dof)
+
+    def parr_corr_idx(self, C, i, j):
+        from scipy import stats, linalg
+        i = i - 1
+        j = j - 1
+
+        C = numpy.asarray(C)
+        p = C.shape[1]
+        idx = numpy.ones(p, dtype=numpy.bool)
+        idx[i] = False
+        idx[j] = False
+        beta_i = linalg.lstsq(C[:, idx], C[:, j])[0]
+        beta_j = linalg.lstsq(C[:, idx], C[:, i])[0]
+
+        res_j = C[:, j] - C[:, idx].dot(beta_i)
+        res_i = C[:, i] - C[:, idx].dot(beta_j)
+
+        corr = stats.pearsonr(res_i, res_j)[0]
+        return corr
+
+    def partial_corr(self, C):
+        from scipy import stats, linalg
+        C = numpy.asarray(C)
+        p = C.shape[1]
+        P_corr = numpy.zeros((p, p), dtype=numpy.float)
+        for i in range(p):
+            P_corr[i, i] = 1
+            for j in range(i + 1, p):
+                idx = numpy.ones(p, dtype=numpy.bool)
+                idx[i] = False
+                idx[j] = False
+                beta_i = linalg.lstsq(C[:, idx], C[:, j])[0]
+                beta_j = linalg.lstsq(C[:, idx], C[:, i])[0]
+
+                res_j = C[:, j] - C[:, idx].dot(beta_i)
+                res_i = C[:, i] - C[:, idx].dot(beta_j)
+
+                corr = stats.pearsonr(res_i, res_j)[0]
+                P_corr[i, j] = corr
+                P_corr[j, i] = corr
+
+        return P_corr
+
+    def filter_results_pcorr(self, pcorr, dof):
+        import scipy
+        result_f = {}
+        if pcorr:
+            result_f['df'] = dof
+            result_f['r_'] = pcorr
+            result_f['r_prime'] = numpy.arctan(pcorr)
+            result_f['t_'] = pcorr * numpy.sqrt((dof) / (1 - pcorr * pcorr))
+            result_f['p_'] = (1 - scipy.special.stdtr(dof, numpy.abs(result_f['t_']))) * 2
+        else:
+            result_f['df'] = dof
+            result_f['r_'] = 0
+            result_f['r_prime'] = 0
+            result_f['t_'] = 0
+            result_f['p_'] = 0
+        result_f['model_wise_results_names'] = self.model_wise_results_names
+        return result_f
 
 class StringModel(pyVoxelStats):
     def __init__(self, string_model_str, voxel_vars, multi_var_ops=None):
