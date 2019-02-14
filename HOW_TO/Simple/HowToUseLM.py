@@ -13,10 +13,11 @@ lm = pyVoxelStatsLM(file_type, model_string, csv_file, mask_file, voxel_variable
                     multi_variable_operations)
 lm.set_no_parallel(False)
 lm.enable_save_model()
-lm.set_up_cluster()
+lm.set_no_parallel(True)
+#lm.set_up_cluster(clus_json='/home/sulantha/ipyparallel_json/ipcontroller-client.json', no_start=True)
 lm.evaluate()
 #lm.set_up_cluster(workers=4)
-#results = lm.res
+results = lm.res
 
 ## Pickle analysis if needed to write results later
 import pickle

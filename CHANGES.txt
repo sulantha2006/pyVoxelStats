@@ -1,2 +1,8 @@
+Version 0.1.1a22
+Improvement on MINC file writing - slight decimal number changes.
+
+Version 0.1.1a20
+Included Pcorr.
+
 Version 0.1.1a8
 Included MINC IO testing.
