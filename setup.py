@@ -30,7 +30,7 @@ setup(
 
     # Dependent packages (distributions)
     install_requires=[
-        "nibabel", "pandas", "numpy", "scipy", "numexpr"
+        "nibabel", "pandas", "numpy", "scipy", "numexpr",
         "pyminc",
         "statsmodels",
         "rpy2",
