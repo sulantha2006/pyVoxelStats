@@ -1,3 +1,6 @@
+Version 0.1.1a23
+Pandas as_matrix() function changed to to_numpy()
+
 Version 0.1.1a22
 Improvement on MINC file writing - slight decimal number changes.
 

@@ -310,7 +310,7 @@ class VarDataAccessPointer:
 
     def get_data(self, pointer_loc):
         if self.outer_shape == 1:
-            return self.var_data.as_matrix()
+            return self.var_data.to_numpy(copy=True)
         return self.var_data[:, pointer_loc % self.outer_shape]
 
     def get_data_block(self, loc_1, loc_2):

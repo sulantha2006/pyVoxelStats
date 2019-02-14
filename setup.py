@@ -5,7 +5,7 @@ setup(
     name="pyVoxelStats",
 
     # Version number (initial):
-    version="0.1.1a22",
+    version="0.1.1a23",
 
     # Application author details:
     author="Sulantha Mathotaarachchi",
@@ -20,7 +20,7 @@ setup(
     include_package_data=True,
 
     # Details
-    url="http://pypi.python.org/pypi/pyVoxelStats_v011a22/",
+    url="http://pypi.python.org/pypi/pyVoxelStats_v011a23/",
 
     #
     # license="LICENSE.txt",
@@ -30,7 +30,7 @@ setup(
 
     # Dependent packages (distributions)
     install_requires=[
-        "nibabel", "pandas", "numpy",
+        "nibabel", "pandas", "numpy", "scipy", "numexpr"
         "pyminc",
         "statsmodels",
         "rpy2",
