@@ -71,5 +71,4 @@ dependencies:
     - tornado==5.1.1
     - traitlets==4.3.2
     - wcwidth==0.1.7
-prefix: /data/data02/sulantha/bin/miniconda37_pyVS
 
