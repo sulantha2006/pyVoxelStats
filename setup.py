@@ -1,11 +1,15 @@
 from setuptools import setup, find_packages
+import json
+
+with open('pyVS/pkg_info.json') as fp:
+    _info = json.load(fp)
 
 setup(
     # Application name:
     name="pyVoxelStats",
 
     # Version number (initial):
-    version="0.1.1a24",
+    version=_info['version'],
 
     # Application author details:
     author="Sulantha Mathotaarachchi",
@@ -20,7 +24,7 @@ setup(
     include_package_data=True,
 
     # Details
-    url="http://pypi.python.org/pypi/pyVoxelStats_v011a24/",
+    url=_info['url'],
 
     #
     # license="LICENSE.txt",
