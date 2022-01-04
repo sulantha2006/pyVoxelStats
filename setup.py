@@ -18,7 +18,7 @@ setup(
     # Packages
     packages=find_packages(),
 
-    package_data = {'pyVS': ['data/*']},
+    package_data = {'pyVS': ['data/*', 'pkg_info.json']},
 
     # Include additional files into the package
     include_package_data=True,
