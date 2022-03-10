@@ -1,3 +1,24 @@
+Version 0.1.5
+Added shut_down_cluster bool
+
+Version 0.1.4
+Added shut_down_cluster bool
+
+Version 0.1.3.3
+Added shut_down_cluster bool
+
+Version 0.1.3.2
+Added shut_down_cluster bool
+
+Version 0.1.3.1
+Added shut_down_cluster bool
+
+Version 0.1.3
+Added shut_down_cluster
+
+Version 0.1.1a26
+Added shut_down_cluster
+
 Version 0.1.1a25
 Added __version__
 

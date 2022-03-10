@@ -37,6 +37,8 @@ class pyVoxelStats:
         self.clust_sleep_time = 10
         self.clust_json = None
 
+        self.cluster_shut_down = False
+
     def set_no_parallel(self, bool_val):
         pyVoxelStats._no_parallel = bool_val
 
@@ -87,6 +89,9 @@ class pyVoxelStats:
         self.clus_no_start = no_start
         self.clust_sleep_time = clust_sleep_time
         self.clust_json = clus_json
+
+    def set_shut_down_cluster(self):
+        self.cluster_shut_down = True
 
     def evaluate(self):
         raise NotImplementedError()

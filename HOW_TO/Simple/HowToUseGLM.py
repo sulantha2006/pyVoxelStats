@@ -16,9 +16,11 @@ family = 'binomial' ## This can either be a string or a statsmodels.api.families
 glm = pyVoxelStatsGLM(file_type, model_string, csv_file, mask_file, voxel_variables, family, subset_string,
                     multi_variable_operations)
 glm.set_up_cluster(no_start=False)
+glm.set_shut_down_cluster()
 #glm.set_up_cluster(workers=24)
 glm.evaluate()
 results = glm.res
+
 #glm.save('Output.mnc', 'tvalues', 'C_d')
 # stats = yappi.get_func_stats()
 # stats.save('pstats.stats', type='pstat')

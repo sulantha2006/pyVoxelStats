@@ -16,7 +16,7 @@ RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc |
 RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 RUN apt-get update
 RUN apt-get install -y r-base
-RUN pip3 install -U --no-cache-dir nibabel numpy pandas pyminc statsmodels rpy2 ipyparallel numexpr scipy pyvoxelstats
+RUN pip3 install -U --no-cache-dir nibabel==3.2.2 numpy==1.22.3 pandas==1.4.1 pyminc==0.55 statsmodels==0.13.2 rpy2==3.4.5 ipyparallel==8.2.0 numexpr==2.8.1 scipy==1.8.0 pyvoxelstats==0.1.5
 
 # ENV
 ENV MINC_TOOLKIT="/opt/minc/1.9.18"

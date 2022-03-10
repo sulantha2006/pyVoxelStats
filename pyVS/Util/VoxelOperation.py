@@ -39,6 +39,7 @@ class VoxelOperation(pyVoxelStats):
                 self.rc = ipp.Client(clus_json)
             else:
                 if not no_start:
+                    self.cluster_profile = profile_name
                     p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(profile_name)], shell=True)
                     time.sleep(5)
                     if workers:
@@ -54,6 +55,16 @@ class VoxelOperation(pyVoxelStats):
             self.par_view = self.rc.direct_view(targets='all')
             self.number_of_engines = len(self.par_view)
             print('Connected to {0} workers. '.format(self.number_of_engines))
+
+    def shut_down_cluster(self, cluster_shut_down):
+        if cluster_shut_down:
+            if not pyVoxelStats._no_parallel:
+                print("Shutting down cluster .....")
+                p0 = subprocess.Popen(['ipcluster stop --profile={0}'.format(self.cluster_profile)], shell=True)
+                time.sleep(6)
+                print("Shutting down cluster complete.")
+        else:
+            print("Cluster shutdown is skipped")
 
     def set_up(self):
         print('Setting up voxel operations ... ')
