@@ -49,7 +49,7 @@ class MincUtil(FileUtil):
 
 class NiftiUtil(FileUtil):
     def __init__(self):
-        FileUtil.__init__()
+        FileUtil.__init__(self)
 
     def _load(self, file_name):
         import nibabel
